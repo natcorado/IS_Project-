@@ -1,302 +1,259 @@
-import React, {useState, useEffect} from "react";
-import { VictoryPie } from "victory-native";
+import React, {useState, length} from "react";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import{
-    StyleSheet,
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    FlatList,
-  
-} from 'react-native';
+import{View,Text,Image,TouchableOpacity,FlatList,} from 'react-native';
+import { VictoryPie } from 'victory-native'; 
 
-
-import {COLORS, FONTS, SIZES, icons} from "../constants"
+import {COLORS, FONTS, SIZES, icons} from "../constants";
+import BC_styles from './HomeStyles/boxesCalendar.js';
+import RH_styles from "./HomeStyles/renderHeader_Styles.js";
+import RL_styles from "./HomeStyles/renderList_Styles.js";
+import box_styles from "./HomeStyles/box_Styles.js";
 
 
 const Home = () => {
 
-    {/*Consts */}
-    
-    const styles = StyleSheet.create({
-      box: {
-        borderWidth: 1,        // Grosor del borde
-        borderColor: '#BEC1D2', 
-        padding: 20,           // Espacio interior (dentro del cuadro)
-                   // Espacio exterior (fuera del cuadro)
-        backgroundColor: 'white', // Color de fondo
-        borderRadius: 10,      // Bordes redondeados
-        margin:15,
-        height:550
-      },
-    });
-    
+// Fecha por defecto y establecimiento de la misma por setShowDatePicker
+const [currentDate, setCurrentDate] = useState(new Date()); 
+//Fecha seleccionada por el usuario
+const [showDatePicker, setShowDatePicker] = useState(false);
+//Definir el dia del boton por defectos
+const [StateDay, setStateDay] = useState('1D');
 
+const getDateRange = (selectedDate, period) => {
+  const start = new Date(selectedDate); 
+  const end = new Date(selectedDate);
 
-    const [currentDate, setCurrentDate] = useState(new Date()); // Inicializar correctamente como Date
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [selectedPeriod, setSelectedPeriod] = useState('1D');
-
-    const openDatePicker = () => {
-      setShowDatePicker(true);
-  };  
-    const onDateChange = (event, selectedDate) => {
-      const newDate = selectedDate || currentDate; // Cambiar nombre de la variable para evitar sobrescribir
-      setShowDatePicker(false); // Cerrar el selector de fecha
-      setCurrentDate(newDate); // Actualizar la fecha seleccionada con el valor Date
-    };
-  
-
-     // Mantener currentDate como un objeto Date
-     useEffect(() => {
-      setCurrentDate(new Date());
-    }, []);
-
-
-    {/*Consts */}
-
-    function renderNavBar(){
-        return(
-            <View
-             style= {{
-                flexDirection: 'row',
-                height: 80,
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                paddingHorizontal: SIZES.padding,
-                backgroundColor: COLORS.white,
-
-             }}
-            >
-                <TouchableOpacity
-                    style={{ justifyContent: 'center', width: 50 }}
-                    onPress={() => console.log('Go Back')}
-                >
-                    <Image 
-                     source={icons.back_arrow}
-                     style={{
-                         width: 30,
-                         height: 30,
-                         tintColor: COLORS.primary
-                    }}
-                    />
-
-                </TouchableOpacity>
-
-                
-                <TouchableOpacity
-                    style={{ justifyContent: 'center', width: 50 }}
-                    onPress={() => console.log('Go Back')}
-                >
-                    <Image 
-                     source={icons.more}
-                     style={{
-                         width: 30,
-                         height: 30,
-                         tintColor: COLORS.primary
-                    }}
-                    />
-
-                </TouchableOpacity>
-
-
-                
-            </View>
-        )
-    }
-
-
-    function renderHeader() {
-
-      const styles = StyleSheet.create({
-        box: {
-            // Color del borde
-          padding: 20,           // Espacio interior (dentro del cuadro)
-          marginTop:10 ,            // Espacio exterior (fuera del cuadro)
-          backgroundColor: 'black', // Color de fondo
-          borderRadius: 10,      // Bordes redondeados
-        },
-        text: {
-          fontSize: 16,
-        },
-      });
-
-        return(
-
-            <View style = {{paddingHorizontal: SIZES.padding2, paddingVertical:SIZES.padding, backgroundColor: COLORS.white, paddingTop: 50}}>
-                <View >     
-                <Text style={{ color: COLORS.darkgray, ...FONTS.h5}}>Good Evening,</Text>
-                <Text style={{ color:COLORS.black, ...FONTS.h1, fontSize: 30, fontWeight: 'bold'}}>User</Text>
-                  <View style={styles.box}>
-                <Text style={{ color: COLORS.white, ...FONTS.h4,  }}>My budget:</Text>
-                <Text style={{ color: COLORS.white, ...FONTS.largeTitle, fontWeight: 'bold', marginTop: 10 }}>$25,890.00</Text>
-                  </View>
-                </View>
-            </View>
-        )
-    }
-
-
-    function boxesCalendar() {
-      const styles = StyleSheet.create({
-        row: {
-          flexDirection: 'row',
-          marginTop: 10,
-          margin: 'auto',
-        },
-        button: {
-          padding: 20,
-          paddingVertical: 9,
-          borderRadius: 7,
-          backgroundColor: 'white',
-          alignSelf: 'flex-center',
-          marginHorizontal: '4%',
-          marginBottom: 6,
-          minWidth: '10%',
-          textAlign: 'center',
-          borderColor: 'black',
-          borderWidth: 1,
-        },
-        selected: {
-          backgroundColor: 'black',
-          borderWidth: 0,
-        },
-        buttonLabel: {
-          fontSize: 12,
-        },
-        selectedLabel: {
-          color: 'white',
-        },
-      });
-    
-      const [StateDay, setStateDay] = useState('1D');
-    
-      return (
-        <View>
-          {/* Botones de Período */}
-          <Text style={{ color: COLORS.black, ...FONTS.h2, fontWeight: 'bold' }}>
-            Expenses by category
-          </Text>
-          <View style={styles.row}>
-            {['1D', '1W', '1M', '1Y'].map((value) => (
-              <TouchableOpacity
-                key={value}
-                onPress={() => setStateDay(value)}
-                style={[
-                  styles.button,
-                  StateDay === value && styles.selected,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.buttonLabel,
-                    StateDay === value && styles.selectedLabel,
-                  ]}
-                >
-                  {value}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-    
-          {/* Calendario */}
-          <View style={{ marginTop: 10, alignItems: 'center'}}>
-          <TouchableOpacity onPress={openDatePicker} style={{ flexDirection: 'row' }}>
-            <Image source={icons.calendar} style={{ width: 20, height: 20, tintColor: COLORS.lightBlue }} />
-            <Text style={{ marginLeft: 10 }}>{currentDate.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View>
-            <Text></Text>
-          </View>
-          
-          
-          {/* Mostrar el selector de fecha cuando showDatePicker sea true */}
-          {showDatePicker && (
-            <DateTimePicker
-              value={currentDate}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-            />
-          )}
-        </View>
-      );
-    }
-    
-    
-    // Datos del gráfico (y la lista)
-  const pieData = [
-    { key: '1', name: "House", y: 41.35 },
-    { key: '2', name: "Credit card", y: 21.00 },
-    { key: '3', name: "Food", y: 17.00 },
-    { key: '4', name: "Transport", y: 10.00 },
-    { key: '5', name: "Shopping", y: 10.65 }
-  ];
-
-  // Estilos
-  const styles2 = StyleSheet.create({
-    box: {
-      borderWidth: 1,
-      borderColor: '#BEC1D2',
-      padding: 20,
-      backgroundColor: 'white',
-      borderRadius: 10,
-      margin: 15,
-    },
-    listContainer: {
-      height: 100,  // Altura fija para que la lista tenga scroll si es necesario
-    },
-    listItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: '#E0E0E0',
-    },
-    listText: {
-      fontSize: 16,
-      color: COLORS.black,
-    },
-    listAmount: {
-      fontSize: 16,
-      color: COLORS.primary,
-    }
-  });
-
-   // Función para renderizar el gráfico
-   function renderPieChart() {
-    return (
-      <View style={{ alignItems: 'center', marginTop: -40 }}>
-        <VictoryPie
-          data={pieData}
-          colorScale={["#FF5F5F", "#50E3C2", "#4A90E2", "#F8E71C", "#BD10E0"]}
-          innerRadius={70}
-          labelRadius={80}
-          labelComponent={<></>}
-          width={SIZES.width}
-          height={300}
-        />
-      </View>
-    );
+  switch (period) {
+    case '1D':
+      console.log(start , "  ----  ", end);
+     
+      return [start, end];  // Para 1D, solo usamos la fecha seleccionada
+    case '1W':
+      start.setDate(start.getDate() - start.getDay()); // Inicio de la semana (domingo)
+      end.setDate(start.getDate() + 6);  // Fin de la semana (sábado)
+      console.log(start , "  ----  ", end);
+      return [start, end];
+    case '1M':
+      start.setDate(1);  // Primer día del mes
+      end.setMonth(end.getMonth() + 1);
+      end.setDate(0); // Último día del mes
+      console.log(start , "  ----  ", end);
+      return [start, end];
+    case '1Y':
+      start.setMonth(0, 1); // Primer día del año
+      end.setMonth(11, 31); // Último día del año
+      console.log(start , "  ----  ", end);
+      return [start, end];
+    default:
+      return [start, end];
   }
+};
+
+//Filtrar los datos con base en el rango de fechas(D,W,M,Y)
+const filterDataByDate = (pieData, startDate, endDate) => {
+  return pieData.filter(item => item.date >= startDate && item.date <= endDate);
+};
+
+// Seteo de los datos del pieChart
+const [filteredData, setFilteredData] = useState(pieData || []);  
+
+ // Actualizar el botón seleccionado(D,W,M,Y)
+const handlePeriodChange = (newPeriod) => {
+  setStateDay(newPeriod); 
+  
+  // Obtener el rango de fechas para el nuevo período (Definir startDate y endDate en base al boton clickeado) 
+  const [startDate, endDate] = getDateRange(currentDate, newPeriod);
+  
+  // Filtrar los datos por el nuevo rango de fechas
+  const newFilteredData =  filterDataByDate(pieData, startDate, endDate);
+
+    // Actualizar los datos filtrados
+  newFilteredData.length >0 ?  setFilteredData(newFilteredData) : setFilteredData([{ key: '1', name: "Nothing ", color: "gray", y: 1}]);
+
+  console.log(filteredData);
+
+};
+
+// Funcion Habilitar el calendario al darle click
+const openDatePicker = () => {
+  setShowDatePicker(true);
+};  
+
+//Funcion para setear la nueva fecha en el calendario al darle ACEPTAR
+const onDateChange = (event, selectedDate) => {
+  const newDate = selectedDate || currentDate; // Cambiar nombre de la variable para evitar sobrescribir
+  setShowDatePicker(false); 
+  setCurrentDate(newDate);
+ 
+};
+
+// Datos del gráfico (y la lista)
+const pieData = [
+  { key: '1', name: "House", color: "#FF5F5F", y: 41.35, date: new Date('2024-02-19') },
+  { key: '2', name: "Credit card", color: "#50E3C2", y: 21.00, date: new Date('2024-02-20') },
+  { key: '3', name: "Food", color: "#4A90E2", y: 17.00, date: new Date('2024-02-22') },
+  { key: '4', name: "Transport", color: "#F8E71C", y: 10.00, date: new Date('2024-02-23') },
+  { key: '5', name: "Shopping", color: "#BD10E0", y: 10.65, date: new Date('2024-02-24') },
+  { key: '6', name: "Papa", color: "#AB10E0", y: 10.65, date: new Date('2024-10-25') }
+];
+
+
+function renderNavBar(){
+    return(
+        <View
+          style= {{
+            flexDirection: 'row',
+            height: 80,
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            paddingHorizontal: SIZES.padding,
+            backgroundColor: COLORS.white,
+
+          }}
+        >
+            <TouchableOpacity
+                style={{ justifyContent: 'center', width: 50 }}
+                onPress={() => console.log('Go Back')}
+            >
+                <Image 
+                  source={icons.back_arrow}
+                  style={{
+                      width: 30,
+                      height: 30,
+                      tintColor: COLORS.primary
+                }}
+                />
+
+            </TouchableOpacity>
+
+            
+            <TouchableOpacity
+                style={{ justifyContent: 'center', width: 50 }}
+                onPress={() => console.log('Go Back')}
+            >
+                <Image 
+                  source={icons.more}
+                  style={{
+                      width: 30,
+                      height: 30,
+                      tintColor: COLORS.primary
+                }}
+                />
+
+            </TouchableOpacity>
+
+
+            
+        </View>
+    )
+}
+
+
+function renderHeader() {
+    return(
+        <View style = {{paddingHorizontal: SIZES.padding2, backgroundColor: COLORS.white, paddingTop: 35}}>
+            <View >     
+            <Text style={{ color: COLORS.darkgray, ...FONTS.h5}}>Good Evening,</Text>
+            <Text style={{ color:COLORS.black, ...FONTS.h1, fontSize: 30, fontWeight: 'bold'}}>User</Text>
+              <View style={RH_styles.box}>
+            <Text style={{ color: COLORS.white, ...FONTS.h4,  }}>My budget:</Text>
+            <Text style={{ color: COLORS.white, ...FONTS.largeTitle, fontWeight: 'bold'}}>$25,890.00</Text>
+              </View>
+            </View>
+        </View>
+    )
+}
+
+
+function boxesCalendar() {
+  return ( 
+    <View>
+      {/* Titulo */}
+      <Text style={{ color: COLORS.black, ...FONTS.h2, fontWeight: 'bold' }}>
+        Expenses by category
+      </Text>
+
+      {/* Calendario */}
+      <View style={{ marginTop: 12, alignItems: 'center'}}>
+        <TouchableOpacity onPress={openDatePicker} style={{ flexDirection: 'row' }}>
+          <Image source={icons.calendar} style={{ width: 20, height: 20, tintColor: COLORS.lightBlue }} />
+          <Text style={{ marginLeft: 10 }}>{currentDate.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Botones de Período */}
+      <View style={BC_styles.row}>
+        {['1D', '1W', '1M', '1Y'].map((value) => (
+          <TouchableOpacity
+            key={value}
+            onPress={() => handlePeriodChange(value)}  // Llamar a handlePeriodChange
+            style={[
+              BC_styles.button,
+              StateDay === value && BC_styles.selected,  // Usar StateDay del estado global
+            ]}
+          >
+            <Text
+              style={[
+                BC_styles.buttonLabel,
+                StateDay === value && BC_styles.selectedLabel,  // Usar StateDay del estado global
+              ]}
+            >
+              {value}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Mostrar el selector de fecha cuando showDatePicker sea true */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={currentDate}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+        />
+      )}
+    </View>
+  );
+}
+
+
+  
+  // Función para renderizar el gráfico
+function renderPieChart() {
+  return (
+    <View style={{ alignItems: 'center', marginTop: -10, marginBottom: -30, paddingVertical: 0 }}>
+      <VictoryPie
+        data={filteredData}
+        colorScale={filteredData.map(item => item.color)} 
+        innerRadius={70}
+        labelRadius={0}  r
+        labelComponent={<></>}  // No renderizar etiquetas
+        width={300}  // Reducir ancho
+        height={300} // Reducir altura
+      />
+  
+    </View>
+  );
+}
   
  // Función para renderizar la lista de datos debajo del gráfico
  function renderList() {
   return (
-    <View style={styles2.listContainer}>
+    <View style={RL_styles.listContainer}>
       <FlatList
-        data={pieData} // Usar los mismos datos del gráfico
+        data={filteredData} // Usar los mismos datos del gráfico
         keyExtractor={item => item.key}
         renderItem={({ item }) => (
-          <View style={styles2.listItem}>
-            <Text style={styles2.listText}>{item.name}</Text>
-            <Text style={styles2.listAmount}>{item.y.toFixed(2)}%</Text>
+          <TouchableOpacity>
+            
+          <View style={RL_styles.listItem}>
+            <Text style={[RL_styles.listItem, { backgroundColor: item.color }]}>{item.name}</Text>
+            <Text style={RL_styles.listAmount}>{ item.y.toFixed(2)}%</Text>
           </View>
+          </TouchableOpacity>
         )}
-        showsVerticalScrollIndicator={false} // Opcional: Oculta el indicador de desplazamiento vertical
+        showsVerticalScrollIndicator={true}
       />
     
     
@@ -305,38 +262,32 @@ const Home = () => {
   );
 }
 
-  function InsertarReporte(){
-
-      return(
-      <TouchableOpacity
-          style={{margin: 'auto'}}
-          onPress={() => console.log('Go Back')}
-      >
-          <Image 
-            source={icons.plus}
-            style={{
-                width: 50,
-                height: 50,
-          }}
-          />
-            </TouchableOpacity>
-      );
-  }
-     
+function InsertarReporte() {
   return (
+      <TouchableOpacity onPress={() => console.log('Go Back')}>
+          <Image
+            source={icons.plus}
+            style={{width: 50,height: 50,marginLeft: 'auto'}}/>
+      </TouchableOpacity>
+  );
+}
+   
+  return (
+    
     <View style = {{flex:1,backgroundColor: COLORS.lightGray2}}>
+      
         {/* Nav var section */}
         {/* renderNavBar() */}
 
         {/* Header section */}
         {renderHeader()}
 
-      <View style={styles.box}>
+      <View style={box_styles.box}>
         <View style={{marginBottom:1}}>
-           {boxesCalendar()}
+          {boxesCalendar()}
         </View>
           {/* Pie chart section */}
-        {renderPieChart()}
+          {renderPieChart()}
 
 
         {/* Lista de datos debajo del gráfico */}
@@ -345,6 +296,7 @@ const Home = () => {
         {/* Insertar reporte  PLUS */}
         {InsertarReporte()}
         </View> 
+       
     </View>
   );
 };

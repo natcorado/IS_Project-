@@ -1,11 +1,20 @@
 import React, { useEffect } from 'react';
-import { createStackNavigator } from "@react-navigation/stack";
+import 'react-native-gesture-handler';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import Home from './screens/Home';  // Importas Home directamente
-import CRUD from './screens/CRUD';  // Importas CRUD directamente
+import { createStackNavigator } from "@react-navigation/stack";
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+import FirstPage from './screens/FirstPage';
+import Login from  './screens/Login';
+import Signup from  './screens/Signup';
+import Home from  './screens/Home';
+import Home_budget from  './screens/Home_budget';
+import Transaction from './screens/Transaction';
+import Budget from './screens/Budget';
+import CRUD from './screens/CRUD';  // Importas CRUD directamente
+
 import * as SplashScreen from 'expo-splash-screen';
 
+const Stack = createStackNavigator();
 // Evitar que la pantalla de splash se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
 
@@ -16,8 +25,6 @@ const theme = {
         border: "transparent",
     },
 };
-
-const Stack = createStackNavigator();
 
 const App = () => {
     // Carga las fuentes usando useFonts
@@ -40,14 +47,15 @@ const App = () => {
 
     return (
         <NavigationContainer theme={theme}>
-            <Stack.Navigator
-                screenOptions={{
-                    headerShown: false
-                }}
-                initialRouteName={'CRUD'}
-            >
+            <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="FirstPage">
                 <Stack.Screen name="Home" component={Home} />
                 <Stack.Screen name="CRUD" component={CRUD} />
+                <Stack.Screen name="FirstPage" component={FirstPage} />
+                <Stack.Screen name="Home_budget" component={Home_budget} />
+                <Stack.Screen name="SignUp" component={Signup} />
+                <Stack.Screen name="Login" component={Login} />
+                <Stack.Screen name="Transaction" component={Transaction} />
+                <Stack.Screen name="Budget" component={Budget} />
             </Stack.Navigator>
         </NavigationContainer>
     );
