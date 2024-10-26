@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Asegúrate de instalar esta librería
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Transaction = () => {
   const navigation = useNavigation();
   const [name, setName] = useState('Narendra Modi');
   const [budget, setBudget] = useState(25890);
+  
+  const [filterType, setFilterType] = useState('All'); 
 
-  // Datos de ejemplo para las transacciones
   const transactions = [
     { id: '1', title: 'Spotify', date: 'Dec 15, 2023', amount: '-$199', isPositive: false },
     { id: '2', title: 'Netflix', date: 'Jan 01, 2023', amount: '-$649', isPositive: false },
@@ -19,25 +20,23 @@ const Transaction = () => {
   ];
 
   const renderTransactionItem = ({ item }) => {
-    // Determina el ícono basado en el título
     let iconName;
     switch (item.title) {
       case 'Spotify':
         iconName = 'spotify';
         break;
       case 'Netflix':
-        iconName = 'film'; // Puedes usar 'netflix' si está disponible en tu pack de íconos
+        iconName = 'film'; 
         break;
       case 'Upwork':
         iconName = 'briefcase';
         break;
       default:
-        iconName = 'credit-card'; // Un ícono genérico para otras transacciones
+        iconName = 'credit-card';
     }
 
     return (
       <View style={styles.transactionContainer}>
-        {/* Cuadro gris con el ícono */}
         <View style={styles.iconContainer}>
           <Icon name={iconName} size={24} color="#000" />
         </View>
@@ -53,11 +52,16 @@ const Transaction = () => {
     );
   };
 
+  const filteredTransactions = transactions.filter(transaction => {
+    if (filterType === 'Incomes') return transaction.isPositive;
+    if (filterType === 'Outcomes') return !transaction.isPositive;
+    return true;
+  });
+
   return (
     <View style={styles.container}>
-      {/* Sección no desplazable del encabezado */}
       <FlatList
-        data={transactions}
+        data={filteredTransactions}
         renderItem={renderTransactionItem}
         keyExtractor={item => item.id}
         ListHeaderComponent={
@@ -70,15 +74,32 @@ const Transaction = () => {
             <View style={styles.balanceCard}>
               <Text style={styles.balanceText}>My Budget:</Text>
               <Text style={styles.balanceAmount}>${budget.toLocaleString()}</Text>
-              <View style={styles.budgetButtonsContainer}>
-                {/* Agrega botones si es necesario */}
-              </View>
             </View>
 
-            <Text style={styles.recentTransactionsText}>Recent Transaction</Text>
-
             <View style={styles.filterSection}>
-              <Text style={styles.filterText}>Filter</Text>
+              <Text style={styles.recentTransactionsText}>Recent Transactions</Text>
+
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                  style={[
+                    styles.filterButton,
+                    filterType === 'Incomes' && styles.activeButton
+                  ]}
+                  onPress={() => setFilterType('Incomes')}
+                >
+                  <Text style={styles.buttonText}>Income</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.filterButton,
+                    filterType === 'Outcomes' && styles.activeButton
+                  ]}
+                  onPress={() => setFilterType('Outcomes')}
+                >
+                  <Text style={styles.buttonText}>Outcome</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </>
         }
@@ -120,11 +141,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 30,
     fontWeight: 'bold',
-  },
-  budgetButtonsContainer: {
-    marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   recentTransactionsText: {
     fontSize: 18,
@@ -169,13 +185,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   filterSection: {
+    marginBottom: 20,
+  },
+  buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  filterButton: {
+    flex: 1,
+    marginHorizontal: 5,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
     alignItems: 'center',
   },
-  filterText: {
+  buttonText: {
     color: '#000',
-    fontSize: 14,
+    fontSize: 16,
+  },
+  activeButton: {
+    backgroundColor: '#ddd',
   },
 });
 

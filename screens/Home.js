@@ -15,18 +15,14 @@ import{
 import {COLORS, FONTS, SIZES, icons} from "../constants"
 
 
-const Home = () => {
-
-    {/*Consts */}
-    
+const Home = () => {    
     const styles = StyleSheet.create({
       box: {
-        borderWidth: 1,        // Grosor del borde
+        borderWidth: 1,        
         borderColor: '#BEC1D2', 
-        padding: 20,           // Espacio interior (dentro del cuadro)
-                   // Espacio exterior (fuera del cuadro)
-        backgroundColor: 'white', // Color de fondo
-        borderRadius: 10,      // Bordes redondeados
+        padding: 20,          
+        backgroundColor: 'white', 
+        borderRadius: 10,     
         margin:15,
         height:550
       },

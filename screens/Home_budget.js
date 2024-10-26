@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ProgressBar } from 'react-native-paper';
@@ -6,14 +6,20 @@ import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 
-
-const Home_budget = () => {
-  const navigation = useNavigation();
+const Home_budget = ({ navigation }) => {
   const [name, setName] = useState('Narendra Modi');
-  const [budget, setBudget] = useState(25890);
-  const [incomes, setIncomes] = useState(500);
-  const [outcomes, setOutcomes] = useState(500);
-  const [progress, setProgress] = useState(0.7);
+  const [budget, setBudget] = useState(2550); 
+  const [incomes, setIncomes] = useState(500); 
+  const [outcomes, setOutcomes] = useState(800); 
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const totalSpent = outcomes; 
+    const totalBudget = budget;
+    
+    const newProgress = totalBudget > 0 ? totalSpent / totalBudget : 0;
+    setProgress(newProgress);
+  }, [outcomes, budget]); 
 
   return (
     <View style={styles.container}>
@@ -27,11 +33,17 @@ const Home_budget = () => {
           <Text style={styles.balanceText}>My Budget:</Text>
           <Text style={styles.balanceAmount}>${budget.toLocaleString()}</Text>
           <View style={styles.budgetButtonsContainer}>
-            <TouchableOpacity style={styles.budgetButton}>
+            <TouchableOpacity
+              style={styles.budgetButton}
+              onPress={() => navigation.navigate('Budget')}
+            >
               <FontAwesome name="arrow-down" size={16} color="#fff" style={styles.icon} />
               <Text style={styles.budgetButtonText}>Add income</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.budgetButton}>
+            <TouchableOpacity 
+              style={styles.budgetButton}
+              onPress={() => navigation.navigate('Budget')}
+            >
               <FontAwesome name="arrow-up" size={16} color="#fff" style={styles.icon} />
               <Text style={styles.budgetButtonText}>Add outcome</Text>
             </TouchableOpacity>
@@ -52,7 +64,10 @@ const Home_budget = () => {
               </View>
               <View style={styles.cardTextContainer2}>
                 <Text style={styles.cardPercentage}>+12.503%</Text>
-                <TouchableOpacity style={styles.detailsButton}>
+                <TouchableOpacity 
+                  style={styles.detailsButton}
+                  onPress={() => navigation.navigate('Incomes', { type: 'incomes' })} 
+                >
                   <Text style={styles.detailsButtonText}>Details</Text>
                 </TouchableOpacity>
               </View>   
@@ -70,7 +85,10 @@ const Home_budget = () => {
               </View>
               <View style={styles.cardTextContainer3}>
                 <Text style={styles.cardPercentage}>+12.503%</Text>
-                <TouchableOpacity style={styles.detailsButton}>
+                <TouchableOpacity 
+                  style={styles.detailsButton}
+                  onPress={() => navigation.navigate('Incomes', { type: 'outcomes' })}
+                >
                   <Text style={styles.detailsButtonText}>Details</Text>
                 </TouchableOpacity>
               </View>   
@@ -83,11 +101,11 @@ const Home_budget = () => {
         <View style={styles.budgetProgressContainer}>
           <View style={styles.budgetProgressInfo}>
             <Text style={styles.budgetProgressLabel}>Left to spend</Text>
-            <Text style={styles.budgetProgressAmount}>$738</Text>
+            <Text style={styles.budgetProgressAmount}>${(budget - outcomes).toLocaleString()}</Text>
           </View>
           <View style={styles.budgetProgressInfo}>
             <Text style={styles.budgetProgressLabel}>Monthly budget</Text>
-            <Text style={styles.budgetProgressAmount}>$2,550</Text>
+            <Text style={styles.budgetProgressAmount}>${budget.toLocaleString()}</Text>
           </View>
           <ProgressBar progress={progress} color={'#000'} style={styles.progressBar} /> 
         </View>
@@ -241,10 +259,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   progressBar: {
-    marginVertical: 10,
     height: 10,
+    marginTop: 10,
     borderRadius: 5,
-    backgroundColor: '#f0f0f0',
   },
 });
 
