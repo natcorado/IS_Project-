@@ -13,7 +13,7 @@ const Footer = ({ navigation }) => {
         <FontAwesome name="exchange" size={24} color="black" />
         <Text>Transaction</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Budget')}>
+      <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
         <FontAwesome name="bar-chart" size={24} color="black" />
         <Text>Budget</Text>
       </TouchableOpacity>

@@ -2,7 +2,7 @@
 const renderHeader_Styles = {
     box: {
         // Color del borde
-      padding: 10,           // Espacio interior (dentro del cuadro)
+      padding: 20,           // Espacio interior (dentro del cuadro)
     
       backgroundColor: 'black', // Color de fondo
       borderRadius: 10,      // Bordes redondeados

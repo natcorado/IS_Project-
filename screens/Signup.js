@@ -21,7 +21,7 @@ const Signup = ({ navigation }) => {
           };
           console.log("Data being sent:", signupData); // Depuración de datos enviados
    
-          const response = await fetch('http://10.1.18.83/API/addUsuario.php', {
+          const response = await fetch('http://172.20.10.3/API/addUsuario.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',

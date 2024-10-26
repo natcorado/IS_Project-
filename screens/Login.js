@@ -7,7 +7,7 @@ const Login = ({ navigation }) => {
 
     const handleLogin = async () => {
       try {
-          const response = await fetch('http://10.1.18.83/API/loginUsuario.php', {
+          const response = await fetch('http://172.20.10.3/API/loginUsuario.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ const Login = ({ navigation }) => {
   
           if (response.ok && jsonResponse.success) {
               // Si la autenticación es exitosa, navega a la pantalla "Home"
-              navigation.navigate('Home');
+              navigation.navigate('Home_budget');
           } else {
               Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
           }

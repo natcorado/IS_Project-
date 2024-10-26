@@ -15,7 +15,7 @@ const Budget = () => {
   const [comments, setComments] = useState('');
   const [showPicker, setShowPicker] = useState(false); 
 
-  const categories = ['Category 1', 'Category 2','Category 3', '+'];
+  const categories = ['Category 1', 'Category 2', '+'];
 
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;

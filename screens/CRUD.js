@@ -16,8 +16,8 @@ export default function CRUD() {
     // Peticion a la API
     const getTipoReportes = async () => {
         try {
-            const respuesta = await axios.get('http://192.168.1.9/API/getTiposReportes.php');
-           
+            const respuesta = await axios.get('http://172.20.10.3/API/getTiposReportes.php');
+        
             setlistaTipos(respuesta.data);
         } catch (error) {
             console.error("Error al obtener los tipos de reportes: ", error);

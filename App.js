@@ -6,8 +6,8 @@ import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/in
 import FirstPage from './screens/FirstPage';
 import Login from  './screens/Login';
 import Signup from  './screens/Signup';
-import Home from  './screens/Home';
-import Home_budget from  './screens/Home_budget';
+import Home from  './screens/Home_budget';
+import Home_budget from  './screens/Home';
 import Transaction from './screens/Transaction';
 import Budget from './screens/Budget';
 import CRUD from './screens/CRUD';  // Importas CRUD directamente
