@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "",
     "userInterfaceStyle": "light",
+    
     "splash": {
       "image": "",
       "resizeMode": "contain",

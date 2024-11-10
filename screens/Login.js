@@ -1,36 +1,71 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    
     const handleLogin = async () => {
-        try {
-            const response = await fetch('http://10.10.10.74/API/login.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    correo: email,
-                    contrasena: password,
-                }),
+      try {
+          const response = await fetch('http://10.10.10.74/API/loginUsuario.php', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  correo: email,
+                  contrasena: password,
+              }),
+          });
+  
+          const rawText = await response.text();
+          console.log("Raw Response Text:", rawText);
+  
+          const jsonResponse = JSON.parse(rawText);
+          console.log("Parsed JSON Response:", jsonResponse);
+  
+          if (jsonResponse.success) {
+            console.log("Parsed JSON Response:", jsonResponse);
+            navigation.navigate('Home_budget', {
+                id_usuario: jsonResponse.id,
+                nombre: jsonResponse.nombre,
+                patrimonio: jsonResponse.patrimonio,
             });
+        } else {
+            Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
+        }
+      } catch (error) {
+          Alert.alert("Error", "An error occurred. Please try again.");
+          console.error("Login error:", error);
+      }
+    }; 
 
-            const jsonResponse = await response.json();
+  /*
+    const handleLogin = async() =>{
+        const jsonResponse = {
+            success: true, 
+            message: "Login exitoso",
+            id: 1,
+            nombre: "Kike Aragon", 
+            patrimonio: 5000
+        };
 
-            if (jsonResponse.message) {
-                Alert.alert("Éxito", jsonResponse.message);
-                navigation.navigate('Home_budget'); 
-            } else if (jsonResponse.error) {
-                Alert.alert("Error", jsonResponse.error);
-            }
-        } catch (error) {
-            Alert.alert("Error", "Error en la solicitud");
+        if (jsonResponse.success) {
+            console.log("Parsed JSON Response:", jsonResponse);
+            navigation.navigate('Home_budget', {
+                id_usuario: jsonResponse.id,
+                nombre: jsonResponse.nombre,
+                patrimonio: jsonResponse.patrimonio,
+            });
+        } else {
+            Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
         }
     };
 
+*/
+
+  
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Login</Text>
@@ -48,7 +83,7 @@ const Login = ({ navigation }) => {
             <Text style={styles.label}>Password</Text>
             <TextInput
                 style={styles.input}
-                placeholder="ingrese password"
+                placeholder="Enter password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={true}
@@ -66,7 +101,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'left',
         padding: 20,
         backgroundColor: '#fff',
     },
@@ -87,7 +121,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         padding: 15,
         borderRadius: 10,
-        width: '100%',
         alignItems: 'center',
         marginTop: 20,
     },

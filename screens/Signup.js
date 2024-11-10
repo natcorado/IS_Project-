@@ -14,33 +14,45 @@ const Signup = ({ navigation }) => {
       }
   
       try {
+          const signupData = {
+              nombre: nombre,
+              correo: email,
+              contrasena: password,
+          };
+          console.log("Data being sent:", signupData); 
+  
           const response = await fetch('http://10.10.10.74/API/addUsuario.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                  nombre: nombre,
-                  correo: email,
-                  contrasena: password,
-              }),
+              body: JSON.stringify(signupData),
           });
   
-          const jsonResponse = await response.json();
-          
-          console.log("Response:", jsonResponse);
+          const responseText = await response.text();
+          console.log("Raw Response Text:", responseText);
   
-          if (response.ok) {
-              Alert.alert("Success", jsonResponse.message);
-              
+          if (response.headers.get('content-type')?.includes('application/json')) {
+              const jsonResponse = JSON.parse(responseText);
+              console.log("Parsed JSON Response:", jsonResponse);
+          
+              if (jsonResponse.status === 'success') {
+                  Alert.alert("Success", jsonResponse.message);
+                  navigation.navigate('Login');
+              } else {
+                  Alert.alert("Error", jsonResponse.message || "Failed to sign up");
+              }
+  
           } else {
-              Alert.alert("Error", jsonResponse.error || "Failed to sign up");
+              Alert.alert("Error", "Unexpected server response: " + responseText);
           }
       } catch (error) {
           Alert.alert("Error", "An error occurred. Please try again later.");
           console.error("Fetch error:", error);
       }
     };
+  
+   
   
 
     return (

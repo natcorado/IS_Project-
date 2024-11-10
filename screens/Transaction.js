@@ -1,23 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const Transaction = () => {
+
+
+const Transaction = ({ route }) => {
+
+  const { id_usuario, nombre, patrimonio } = route.params;
   const navigation = useNavigation();
-  const [name, setName] = useState('Narendra Modi');
-  const [budget, setBudget] = useState(25890);
-  
+  const [transactions, setTransactions] = useState([]);
+
+  const [id_user, setId_user] = useState(id_usuario);
+  const [name, setName] = useState(nombre);
+  const [budget, setBudget] = useState(patrimonio);
   const [filterType, setFilterType] = useState('All'); 
 
-  const transactions = [
-    { id: '1', title: 'Spotify', date: 'Dec 15, 2023', amount: '-$199', isPositive: false },
-    { id: '2', title: 'Netflix', date: 'Jan 01, 2023', amount: '-$649', isPositive: false },
-    { id: '3', title: 'Upwork', date: 'Feb 12, 2024', amount: '+$1445.90', isPositive: true },
-    { id: '4', title: 'Spotify', date: 'Dec 15, 2023', amount: '-$199', isPositive: false },
-  ];
+  useEffect(() => {
+    handleBoth();
+  }, []);
+
+  const handleBoth = async () => {
+    try {
+      const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id_usuario: id_usuario,
+            Income_Outcome: 2,
+          }),
+      });
+
+      const rawText = await response.text();
+      console.log("Raw Response Text:", rawText);
+
+      const jsonResponse = JSON.parse(rawText);
+      console.log("Parsed JSON Response:", jsonResponse);
+
+      if (jsonResponse.status === "success") {
+        const formattedTransactions = jsonResponse.data.map(item => ({
+          id: item.id_reporte.toString(),
+          title: item.categoria,
+          date: new Date(item.fecha).toLocaleDateString(),
+          amount: (item.tipo_reporte === 'Ingreso' ? '' : '-') + `$${Math.abs(item.cantidad)}`,
+          isPositive: item.tipo_reporte === 'Ingreso'
+        }));
+
+        setTransactions(formattedTransactions);
+      } else {
+        Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+      }
+    } catch (error) {
+      Alert.alert("Error", "An error occurred. Please try again.");
+    }
+  };
 
   const renderTransactionItem = ({ item }) => {
     let iconName;
@@ -58,6 +98,14 @@ const Transaction = () => {
     return true;
   });
 
+  const toggleFilter = (filter) => {
+    if (filter === filterType) {
+      setFilterType('All'); 
+    } else {
+      setFilterType(filter); 
+    }
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -73,11 +121,20 @@ const Transaction = () => {
 
             <View style={styles.balanceCard}>
               <Text style={styles.balanceText}>My Budget:</Text>
-              <Text style={styles.balanceAmount}>${budget.toLocaleString()}</Text>
+              <Text style={styles.balanceAmount}>${budget ? budget.toLocaleString() : '0.00'}</Text>
             </View>
 
             <View style={styles.filterSection}>
-              <Text style={styles.recentTransactionsText}>Recent Transactions</Text>
+              <View style={styles.cardContent}>
+                <Text style={styles.recentTransactionsText}>Recent Transactions</Text>
+
+                <TouchableOpacity 
+                  style={styles.detailsButton}
+                  onPress={() => navigation.navigate('Incomes', { type: 'incomes' })} 
+                >
+                  <Text style={styles.detailsButtonText}>See More</Text>
+                </TouchableOpacity>
+              </View>
 
               <View style={styles.buttonGroup}>
                 <TouchableOpacity
@@ -85,7 +142,7 @@ const Transaction = () => {
                     styles.filterButton,
                     filterType === 'Incomes' && styles.activeButton
                   ]}
-                  onPress={() => setFilterType('Incomes')}
+                  onPress={() => toggleFilter('Incomes')}
                 >
                   <Text style={styles.buttonText}>Income</Text>
                 </TouchableOpacity>
@@ -95,7 +152,7 @@ const Transaction = () => {
                     styles.filterButton,
                     filterType === 'Outcomes' && styles.activeButton
                   ]}
-                  onPress={() => setFilterType('Outcomes')}
+                  onPress={() => toggleFilter('Outcomes')}
                 >
                   <Text style={styles.buttonText}>Outcome</Text>
                 </TouchableOpacity>
@@ -103,11 +160,15 @@ const Transaction = () => {
             </View>
           </>
         }
-        ListFooterComponent={<Footer navigation={navigation} />}
+        ListFooterComponent={
+          transactions.length === 0 ? (
+            <Text style={styles.noTransactionsText}>No transactions available</Text>
+          ) : null
+        }
       />
 
-      <AddButton />
-      <Footer navigation={navigation} />
+      <AddButton id_usuario={id_user} nombre={name} patrimonio={budget}/>
+      <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget}/>
     </View>
   );
 };
@@ -117,6 +178,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+  },
+  cardContent: {
+    justifyContent: 'space-between',
+    flexDirection: 'row', 
+    alignItems: 'flex-start', 
+    marginBottom: 20
   },
   greeting: {
     fontSize: 16,
@@ -158,6 +225,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: 'gray',
+  },
+  detailsButton: {
+    padding: 4,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 15,
+    marginTop: 10,
+    alignItems: 'center', 
+    justifyContent: 'center',
+  },
+  detailsButtonText: {
+    color: 'gray',
+    textAlign: 'center',
   },
   iconContainer: {
     width: 60,
@@ -205,6 +286,11 @@ const styles = StyleSheet.create({
   },
   activeButton: {
     backgroundColor: '#ddd',
+  },
+  noTransactionsText: {
+    textAlign: 'center',
+    color: '#888',
+    fontSize: 16,
   },
 });
 

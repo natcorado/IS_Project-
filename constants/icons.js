@@ -9,6 +9,7 @@ export const food = require("../assets/icons/food_icon.png");
 export const healthcare = require("../assets/icons/healthcare_icon.png");
 export const menu = require("../assets/icons/menu_icon.png");
 export const more = require("../assets/icons/more_icon.png");
+export const plus = require("../assets/icons/mas.png");
 export const pin = require("../assets/icons/pin.png");
 export const sports_icon = require("../assets/icons/sports_icon.png");
 export const up_arrow = require("../assets/icons/up_arrow.png");
@@ -26,6 +27,7 @@ export default {
     menu,
     more,
     pin,
+    plus,
     sports_icon,
     up_arrow
 }

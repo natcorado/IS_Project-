@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
-import AddButton from './../components/AddButton';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import DateTimePicker from '@react-native-community/datetimepicker'; 
+import { Picker } from '@react-native-picker/picker';
+import Modal from './../components/Modal';
 
-const Budget = () => {
+
+const Budget = ({ route }) => {
+  const { id_usuario, nombre, patrimonio } = route.params;
+
+  const [id_user, setId_user] = useState(id_usuario);
+  const [name, setName] = useState(nombre);
+  const [budget, setBudget] = useState(patrimonio); 
+
   const navigation = useNavigation();
+  const [modalOpen, setModalOpen] = useState(false);
   const [isExpense, setIsExpense] = useState(true);
+
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [date, setDate] = useState(new Date());
   const [comments, setComments] = useState('');
-  const [showPicker, setShowPicker] = useState(false); 
+  const [showPicker, setShowPicker] = useState(false);
 
-  const categories = ['Category 1', 'Category 2', '+'];
+  const categories = ['Category 1', 'Category 2', 'Category 3'];
 
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -23,13 +33,50 @@ const Budget = () => {
     setDate(currentDate);
   };
 
+
   const showDatepicker = () => {
-    setShowPicker(true); 
+    setShowPicker(true);
+  };
+
+  const handleAddCategory = () => {
+    setModalOpen(true); 
+  };
+
+  const closeModal = () => {
+    setModalOpen(false); 
   };
 
   return (
     <View style={styles.container}>
+      {modalOpen && (
+          <Modal isOpen={modalOpen} withInput>
+              <View style={styles.modal}>
+                  <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>
+                        {isExpense ? "Add Category - Expenses": "Add Category - Income"}
+                      </Text>
+                      <Text style={styles.sectionLabel}>Categories</Text>
+                      <TextInput
+                          style={styles.modalInput}
+                          placeholder="Enter category name"
+                      />
+                      <View style={styles.buttonRow}>
+                          <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                              <Text style={styles.closeButtonText}>Close</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.addButtonModal} onPress={() => Alert.alert('Add button pressed')}>
+                              <Text style={styles.addButtonModalText}>Add</Text>
+                          </TouchableOpacity>
+                      </View>
+                  </View>
+              </View>
+          </Modal>
+      )}
       <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Please,</Text>
+          <Text style={styles.userName}>Add New Register</Text>
+        </View>
         <View style={styles.toggleContainer}>
           <TouchableOpacity
             style={[styles.toggleButton, isExpense && styles.activeButton]}
@@ -57,30 +104,19 @@ const Budget = () => {
         </View>
 
         <Text style={styles.sectionLabel}>Categories</Text>
-        <FlatList
-          data={categories}
-          horizontal
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.categoryButton,
-                selectedCategory === item && styles.activeCategory,
-              ]}
-              onPress={() => setSelectedCategory(item)}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === item && styles.activeCategoryText,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item}
-          contentContainerStyle={styles.categoryList}
-        />
+        <Picker
+          selectedValue={selectedCategory}
+          style={styles.picker}
+          onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+        >
+          {categories.map((category, index) => (
+            <Picker.Item key={index} label={category} value={category} />
+          ))}
+        </Picker>
+
+        <TouchableOpacity style={styles.addCategoryButton} onPress={handleAddCategory}>
+          <Text style={styles.addCategoryButtonText}>+ Add Category</Text>
+        </TouchableOpacity>
 
         <Text style={styles.sectionLabel}>Date</Text>
         <TouchableOpacity onPress={showDatepicker} style={styles.dateButton}>
@@ -96,7 +132,6 @@ const Budget = () => {
           />
         )}
 
-        {/* Comments Input */}
         <Text style={styles.sectionLabel}>Comments</Text>
         <TextInput
           style={styles.commentsInput}
@@ -111,9 +146,11 @@ const Budget = () => {
         <TouchableOpacity style={styles.addButton}>
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
-      
+
+        <View style={styles.space} />
+
       </ScrollView>
-      <Footer navigation={navigation} />
+      <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget} />
     </View>
   );
 };
@@ -123,6 +160,76 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+  },
+  modal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalInput: {
+    width: '100%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  closeButton: {
+    backgroundColor: '#000',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  addButtonModal: {
+    backgroundColor: '#000',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 5,
+  },
+  addButtonModalText: {
+    color: '#fff',
+    fontSize: 16
+  },
+  header: {
+    marginBottom: 20,
+  },
+  userName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 10,
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -173,8 +280,6 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 100,
     textAlignVertical: 'top',
-    marginVertical: 10,
-    flexGrow: 1,
   },
   addButton: {
     backgroundColor: '#000',
@@ -187,28 +292,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  categoryButton: {
-    padding: 10,
-    backgroundColor: '#e0e0e0',
+  addCategoryButton: {
+    backgroundColor: '#fff',
+    borderColor: 'gray',
+    borderWidth: 1,
     borderRadius: 10,
-    marginHorizontal: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 15,
   },
-  activeCategory: {
-    backgroundColor: '#000',
-  },
-  categoryText: {
-    color: '#000',
+  addCategoryButtonText: {
     fontSize: 16,
+    color: 'gray',
+    fontWeight: 'bold',
   },
-  activeCategoryText: {
-    color: '#fff',
+  picker: {
+    height: 50,
+    borderColor: '#e0e0e0',
+    borderWidth: 1,
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
   },
   dateButton: {
     padding: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
     alignItems: 'center',
-    marginVertical: 10,
+    marginBottom: 15,
+  },
+  space: {
+    marginBottom: 100,
   },
 });
 

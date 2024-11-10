@@ -1,13 +1,26 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'; // Importa useNavigation
+import { useNavigation } from '@react-navigation/native';
 
-const AddButton = () => {
+const AddButton = ({id_usuario, nombre, patrimonio }) => {
+
+  const [id_user, setId_user] = useState(id_usuario);
+  const [name, setName] = useState(nombre);
+  const [budget, setBudget] = useState(patrimonio); 
   const navigation = useNavigation(); 
 
   return (
-    <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('Budget')}>
+    <TouchableOpacity 
+      style={styles.addButton}
+      onPress={() => {
+        navigation.navigate('Budget', {
+          id_usuario: id_user,
+          nombre: name,
+          patrimonio: budget,
+        });
+      }}
+    >
       <FontAwesome name="plus" size={24} color="white" />
     </TouchableOpacity>
   );

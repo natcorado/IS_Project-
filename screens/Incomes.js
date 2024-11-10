@@ -1,97 +1,115 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import Footer from '../components/Footer';
-import AddButton from '../components/AddButton';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { ProgressBar } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import Footer from './../components/Footer';
+import AddButton from './../components/AddButton';
 
+const Home_budget = ({ navigation }) => {
+  const [name, setName] = useState('Narendra Modi');
+  const [budget, setBudget] = useState(2550); 
+  const [incomes, setIncomes] = useState(500); 
+  const [outcomes, setOutcomes] = useState(800); 
+  const [progress, setProgress] = useState(0);
 
-const Incomes = () => {
-  const navigation = useNavigation();
-  const route = useRoute(); 
-  const { type } = route.params; 
-
-  const transactions = [
-    { id: '1', title: 'Spotify', date: 'Dec 15, 2023', amount: '-$199', isPositive: false },
-    { id: '2', title: 'Netflix', date: 'Jan 01, 2023', amount: '-$649', isPositive: false },
-    { id: '3', title: 'Upwork', date: 'Feb 12, 2024', amount: '+$1445.90', isPositive: true },
-    { id: '4', title: 'Spotify', date: 'Dec 15, 2023', amount: '-$199', isPositive: false },
-  ];
-
-  //filtros por categoria
-  //filtros por meses 
-
-  const filteredTransactions = transactions.filter(item =>
-    type === 'incomes' ? item.isPositive : !item.isPositive
-  );
-
-  const renderTransactionItem = ({ item }) => {
-    let iconName;
-    switch (item.title) {
-      case 'Spotify':
-        iconName = 'spotify';
-        break;
-      case 'Netflix':
-        iconName = 'film'; 
-        break;
-      case 'Upwork':
-        iconName = 'briefcase';
-        break;
-      default:
-        iconName = 'credit-card';
-    }
-
-    return (
-      <View style={styles.transactionContainer}>
-        <View style={styles.iconContainer}>
-          <Icon name={iconName} size={24} color="#000" />
-        </View>
-
-        <View style={styles.transactionDetails}>
-          <Text style={styles.transactionTitle}>{item.title}</Text>
-          <Text style={styles.transactionDate}>{item.date}</Text>
-        </View>
-        <Text style={[styles.transactionAmount, { color: item.isPositive ? 'green' : 'red' }]}>
-          {item.amount}
-        </Text>
-      </View>
-    );
-  };
+  useEffect(() => {
+    const totalSpent = outcomes; 
+    const totalBudget = budget;
+    
+    const newProgress = totalBudget > 0 ? totalSpent / totalBudget : 0;
+    setProgress(newProgress);
+  }, [outcomes, budget]); 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>{type === 'incomes' ? 'Incomes' : 'Outcomes'}</Text>
-      
-      <View style={styles.filterSection}>
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              styles.activeButton
-            ]}
-
-          >
-          
-            <Text style={styles.buttonText}>Category</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              styles.activeButton
-            ]}
-          >
-            <Text style={styles.buttonText}>Outcome</Text>
-          </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Good Evening,</Text>
+          <Text style={styles.userName}>{name}</Text>
         </View>
-      </View>
 
-      <FlatList
-        data={filteredTransactions}
-        renderItem={renderTransactionItem}
-        keyExtractor={item => item.id}
-        ListFooterComponent={<Footer navigation={navigation} />}
-      />
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceText}>My Budget:</Text>
+          <Text style={styles.balanceAmount}>${budget.toLocaleString()}</Text>
+          <View style={styles.budgetButtonsContainer}>
+            <TouchableOpacity
+              style={styles.budgetButton}
+              onPress={() => navigation.navigate('Budget')}
+            >
+              <FontAwesome name="arrow-down" size={16} color="#fff" style={styles.icon} />
+              <Text style={styles.budgetButtonText}>Add income</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.budgetButton}
+              onPress={() => navigation.navigate('Budget')}
+            >
+              <FontAwesome name="arrow-up" size={16} color="#fff" style={styles.icon} />
+              <Text style={styles.budgetButtonText}>Add outcome</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Text marginBottom={-10} style={styles.recentTransactionsText}>Income and Outcomes Overview</Text>
+
+        <View style={styles.overviewContainer}>
+          <View style={styles.card}>
+            <View style={styles.cardContent}>
+              <View style={styles.iconContainer}>
+                <FontAwesome name="arrow-down" size={24} color="gray" />
+              </View>
+              <View style={styles.cardTextContainer}>
+                <Text style={styles.cardTitle}>Incomes</Text>
+                <Text style={styles.cardAmount}>${incomes.toLocaleString()}</Text>
+              </View>
+              <View style={styles.cardTextContainer2}>
+                <Text style={styles.cardPercentage}>+12.503%</Text>
+                <TouchableOpacity 
+                  style={styles.detailsButton}
+                  onPress={() => navigation.navigate('Incomes', { type: 'incomes' })} 
+                >
+                  <Text style={styles.detailsButtonText}>Details</Text>
+                </TouchableOpacity>
+              </View>   
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardContent}>
+              <View style={styles.iconContainer}>
+                <FontAwesome name="arrow-up" size={24} color="gray" />
+              </View>
+              <View style={styles.cardTextContainer}>
+                <Text style={styles.cardTitle}>Outcomes</Text>
+                <Text style={styles.cardAmount}>${outcomes.toLocaleString()}</Text>
+              </View>
+              <View style={styles.cardTextContainer3}>
+                <Text style={styles.cardPercentage}>+12.503%</Text>
+                <TouchableOpacity 
+                  style={styles.detailsButton}
+                  onPress={() => navigation.navigate('Incomes', { type: 'outcomes' })}
+                >
+                  <Text style={styles.detailsButtonText}>Details</Text>
+                </TouchableOpacity>
+              </View>   
+            </View>
+          </View>
+        </View>
+
+        <Text marginBottom={-10} style={styles.recentTransactionsText}>Income and Outcomes Overview</Text>
+
+        <View style={styles.budgetProgressContainer}>
+          <View style={styles.budgetProgressInfo}>
+            <Text style={styles.budgetProgressLabel}>Left to spend</Text>
+            <Text style={styles.budgetProgressAmount}>${(budget - outcomes).toLocaleString()}</Text>
+          </View>
+          <View style={styles.budgetProgressInfo}>
+            <Text style={styles.budgetProgressLabel}>Monthly budget</Text>
+            <Text style={styles.budgetProgressAmount}>${budget.toLocaleString()}</Text>
+          </View>
+          <ProgressBar progress={progress} color={'#000'} style={styles.progressBar} /> 
+        </View>
+      </ScrollView>
 
       <AddButton />
       <Footer navigation={navigation} />
@@ -106,63 +124,145 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'left',
+  scrollViewContent: {
+    paddingBottom: 100,
   },
-  transactionContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 10,
-    marginVertical: 5,
-  },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#d3d3d3',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  transactionDetails: {
-    flex: 1,
-  },
-  transactionTitle: {
+  greeting: {
     fontSize: 16,
+    color: '#333',
+  },
+  userName: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#000',
   },
-  transactionDate: {
-    color: '#666',
-    fontSize: 12,
+  balanceCard: {
+    backgroundColor: '#161616',
+    padding: 20,
+    borderRadius: 10,
+    marginVertical: 20,
   },
-  transactionAmount: {
+  balanceText: {
+    color: '#ccc',
     fontSize: 16,
+  },
+  balanceAmount: {
+    color: '#fff',
+    fontSize: 30,
     fontWeight: 'bold',
   },
-  filterSection: {
-    marginBottom: 20,
-  },
-  buttonGroup: {
+  budgetButtonsContainer: {
+    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  filterButton: {
+  budgetButton: {
+    backgroundColor: 'transparent',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fff',
     flex: 1,
     marginHorizontal: 5,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center', 
+  },
+  budgetButtonText: {
+    textAlign: 'center',
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  recentTransactionsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 10,
+  },
+  overviewContainer: {
+    marginVertical: 20,
+  },
+  card: {
+    backgroundColor: 'transparent',
+    padding: 20,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'gray',
+    marginBottom: 15,
+  },
+  cardContent: {
+    flexDirection: 'row', 
+    alignItems: 'flex-start', 
+  },
+  iconContainer: {
+    backgroundColor: '#d3d3d3',
+    borderRadius: 6, 
+    padding: 20, 
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTextContainer: {
+    marginLeft: 20, 
+    justifyContent: 'flex-end', 
+  },
+  cardTextContainer2: {
+    marginLeft: '35%', 
+    justifyContent: 'flex-end', 
+  },
+  cardTextContainer3: {
+    marginLeft: '31%', 
+    justifyContent: 'flex-end', 
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cardAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  cardPercentage: {
+    color: '#888',
+  },
+  detailsButton: {
+    padding: 4,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 15,
+    marginTop: 10,
+    alignItems: 'center', 
+    justifyContent: 'center',
+  },
+  detailsButtonText: {
+    color: 'gray',
+    textAlign: 'center',
+  },
+  budgetProgressContainer: {
+    backgroundColor: 'transparent',
+    padding: 20,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'gray',
+    marginBottom: 15,
+    marginVertical: 20,
+  },
+  budgetProgressInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  budgetProgressLabel: {
+    color: '#888',
+  },
+  budgetProgressAmount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  progressBar: {
+    height: 10,
+    marginTop: 10,
+    borderRadius: 5,
   },
 });
 
-export default Incomes;
+export default Home_budget;
