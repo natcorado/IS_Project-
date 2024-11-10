@@ -14,7 +14,6 @@ if (isset($data['categoria']) && isset($data['tipo_reporte'])) {
     try {
         $pdo = getConexion();
         
-        // Insertar el nuevo tipo de reporte
         $sql = "INSERT INTO ADMIN_Tipo_Reporte (categoria, tipo_reporte) VALUES (:categoria, :tipo_reporte)";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':categoria', $data['categoria']);

@@ -1,25 +1,183 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ProgressBar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 
-const Home_budget = ({ navigation }) => {
-  const [name, setName] = useState('Narendra Modi');
-  const [budget, setBudget] = useState(2550); 
-  const [incomes, setIncomes] = useState(500); 
-  const [outcomes, setOutcomes] = useState(800); 
-  const [progress, setProgress] = useState(0);
+const Home_budget = ({ route , navigation}) => {
+  const { id_usuario, nombre, patrimonio} = route.params;
 
+  const [id_user, setId_user] = useState(id_usuario);
+  const [name, setName] = useState(nombre);
+  const [budget, setBudget] = useState(patrimonio); 
+  const [incomes, setIncomes] = useState(0); 
+  const [outcomes, setOutcomes] = useState(0); 
+  const [progress, setProgress] = useState(0);
+  const [lastIncomes, setlastIncomes] = useState(0); 
+  const [lastoutcomes, setlastOutcomes] = useState(0); 
+
+
+  const handleGetTotalIncome = async () => {
+    try {
+        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id_usuario: id_usuario,
+                Income_Outcome: 4,
+            }),
+        });
+
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
+
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
+
+        if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+          // totalIncome = jsonResponse.data[0].total;
+          setIncomes(jsonResponse.data[0].total);
+        } else {
+          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+        }
+    } catch (error) {
+        Alert.alert("Error", "An error occurred. Please try again.");
+        console.error("Login error:", error);
+    }
+  };
+
+  const handleGetTotalOutcome = async () => {
+    try {
+        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id_usuario: id_usuario,
+                Income_Outcome: 3,
+            }),
+        });
+
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
+
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
+
+        if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+          // totalIncome = jsonResponse.data[0].total;
+          setIncomes(jsonResponse.data[0].total);
+        } else {
+          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+        }
+    } catch (error) {
+        Alert.alert("Error", "An error occurred. Please try again.");
+        console.error("Login error:", error);
+    }
+  };
+
+
+  const handleGetTotalIncomeLastMonth = async () => {
+    try {
+        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id_usuario: id_usuario,
+                Income_Outcome: 4,
+            }),
+        });
+
+
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
+
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
+
+        if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+          // totalIncome = jsonResponse.data[0].total;
+          setIncomes(jsonResponse.data[0].total);
+        } else {
+          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+        }
+    } catch (error) {
+        Alert.alert("Error", "An error occurred. Please try again.");
+        console.error("Login error:", error);
+    }
+    };
+
+  const handleGetTotalOutcomeLastMonth = async () => {
+    try {
+        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id_usuario: id_usuario,
+                Income_Outcome: 5,
+            }),
+        });
+
+        
+
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
+
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
+
+        if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+          setOutcomes(jsonResponse.data[0].total);
+        } else {
+          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+        }
+    } catch (error) {
+        Alert.alert("Error", "An error occurred. Please try again.");
+        console.error("Login error:", error);
+    }
+  }; 
+
+  const calculatePercentageChange = (current, previous) => {
+    if (previous === 0) {
+      return current > 0 ? 100 : 0; 
+    }
+    return ((current - previous) / previous) * 100;
+  };
+  
+  
   useEffect(() => {
     const totalSpent = outcomes; 
     const totalBudget = budget;
     
     const newProgress = totalBudget > 0 ? totalSpent / totalBudget : 0;
     setProgress(newProgress);
+
+    const currentDate = new Date();
+    const currentWeek = Math.ceil((currentDate.getDate() + 6) / 7); 
+
+    if (currentWeek === 3 && newProgress >= 0.85) {
+      Alert.alert("Atención", "Has alcanzado el 85% de tu presupuesto este mes.");
+    }
+    
+
   }, [outcomes, budget]); 
+
+  useEffect(() => {
+    handleGetTotalIncome();
+    handleGetTotalOutcome();
+    handleGetTotalIncomeLastMonth();
+    handleGetTotalOutcomeLastMonth();
+  }, []); 
+  
 
   return (
     <View style={styles.container}>
@@ -60,17 +218,32 @@ const Home_budget = ({ navigation }) => {
               </View>
               <View style={styles.cardTextContainer}>
                 <Text style={styles.cardTitle}>Incomes</Text>
-                <Text style={styles.cardAmount}>${incomes.toLocaleString()}</Text>
+                <Text style={styles.cardAmount}>${incomes ? incomes.toLocaleString() : "0"}</Text>
               </View>
+
               <View style={styles.cardTextContainer2}>
-                <Text style={styles.cardPercentage}>+12.503%</Text>
+                <Text
+                  style={[
+                    styles.cardPercentage,
+                    calculatePercentageChange(incomes, lastIncomes) > 0
+                      ? styles.positive
+                      : calculatePercentageChange(incomes, lastIncomes) < 0
+                      ? styles.negative
+                      : styles.neutral,
+                  ]}
+                >
+                  {calculatePercentageChange(incomes, lastIncomes) >= 0 ? '+' : ''}
+                  {calculatePercentageChange(incomes, lastIncomes).toFixed(2)}%
+                </Text>
                 <TouchableOpacity 
                   style={styles.detailsButton}
                   onPress={() => navigation.navigate('Incomes', { type: 'incomes' })} 
                 >
                   <Text style={styles.detailsButtonText}>Details</Text>
                 </TouchableOpacity>
-              </View>   
+              </View>  
+
+
             </View>
           </View>
 
@@ -81,10 +254,22 @@ const Home_budget = ({ navigation }) => {
               </View>
               <View style={styles.cardTextContainer}>
                 <Text style={styles.cardTitle}>Outcomes</Text>
-                <Text style={styles.cardAmount}>${outcomes.toLocaleString()}</Text>
+                <Text style={styles.cardAmount}>${outcomes ? incomes.toLocaleString() : "0"}</Text>
               </View>
               <View style={styles.cardTextContainer3}>
-                <Text style={styles.cardPercentage}>+12.503%</Text>
+                <Text
+                  style={[
+                    styles.cardPercentage,
+                    calculatePercentageChange(outcomes, lastoutcomes) > 0
+                      ? styles.negative
+                      : calculatePercentageChange(outcomes, lastoutcomes) < 0
+                      ? styles.positive
+                      : styles.neutral,
+                  ]}
+                >
+                  {calculatePercentageChange(outcomes, lastoutcomes) >= 0 ? '+' : ''}
+                  {calculatePercentageChange(outcomes, lastoutcomes).toFixed(2)}%
+                </Text>
                 <TouchableOpacity 
                   style={styles.detailsButton}
                   onPress={() => navigation.navigate('Incomes', { type: 'outcomes' })}
@@ -112,7 +297,8 @@ const Home_budget = ({ navigation }) => {
       </ScrollView>
 
       <AddButton />
-      <Footer navigation={navigation} />
+      <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget} />
+
 
     </View>
   );
@@ -223,6 +409,12 @@ const styles = StyleSheet.create({
   },
   cardPercentage: {
     color: '#888',
+  },
+  positive: {
+    color: 'green',
+  },
+  negative: {
+    color: 'red',
   },
   detailsButton: {
     padding: 4,

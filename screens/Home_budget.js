@@ -149,10 +149,7 @@ function renderNavBar(){
                 }}
                 />
 
-            </TouchableOpacity>
-
-
-            
+            </TouchableOpacity>            
         </View>
     )
 }
@@ -173,7 +170,7 @@ function renderHeader() {
     )
 }
 
-
+/*@ */
 function boxesCalendar() {
   return ( 
     <View>
@@ -186,7 +183,7 @@ function boxesCalendar() {
       <View style={{ marginTop: 12, alignItems: 'center'}}>
         <TouchableOpacity onPress={openDatePicker} style={{ flexDirection: 'row' }}>
           <Image source={icons.calendar} style={{ width: 20, height: 20, tintColor: COLORS.lightBlue }} />
-          <Text style={{ marginLeft: 10 }}>{currentDate.toLocaleDateString()}</Text>
+          <Text style={{ marginLeft: 10 }}>{ }</Text>
         </TouchableOpacity>
       </View>
 

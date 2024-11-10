@@ -10,7 +10,8 @@ import Home from  './screens/Home_budget';
 import Home_budget from  './screens/Home';
 import Transaction from './screens/Transaction';
 import Budget from './screens/Budget';
-import CRUD from './screens/CRUD';  // Importas CRUD directamente
+import CRUD from './screens/CRUD'; 
+import Incomes from './screens/Incomes'; 
 
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -50,6 +51,7 @@ const App = () => {
             <Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="FirstPage">
                 <Stack.Screen name="Home" component={Home} />
                 <Stack.Screen name="CRUD" component={CRUD} />
+                <Stack.Screen name="Incomes" component={Incomes}/>
                 <Stack.Screen name="FirstPage" component={FirstPage} />
                 <Stack.Screen name="Home_budget" component={Home_budget} />
                 <Stack.Screen name="SignUp" component={Signup} />

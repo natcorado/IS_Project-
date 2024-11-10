@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
@@ -7,10 +7,9 @@ header("Access-Control-Allow-Methods: POST");
 function getConexion() {
     $host = 'postgresql-appgestordegastos.c764g8ko6wn0.us-east-1.rds.amazonaws.com';
     $dbname = 'AppGestorDeGastosDB';  
-    $user = 'postgresUG';                
-    $password = 'Moshopahd03kronos';  
+    $user = 'natali_corado';                
+    $password = 'vamosnatali';        
     $port = 5432;   
-
     try {
         $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
         $pdo = new PDO($dsn, $user, $password, [
@@ -28,29 +27,33 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 if (isset($data['correo']) && isset($data['contrasena'])) {
     try {
-        // Conectar a la base de datos
-        $pdo = getConexion(); // Asegúrate de tener esta función definida correctamente
+        $pdo = getConexion();
 
-        // Consulta para seleccionar el usuario por correo
-        $sql = "SELECT * FROM Usuario WHERE correo = :correo";
+        $sql = "SELECT * FROM usuario WHERE correo = :correo";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':correo', $data['correo']);
         $stmt->execute();
         $user = $stmt->fetch();
 
-        // Verificar si se encontró el usuario y si la contraseña es correcta
-        if ($user && password_verify($data['contrasena'], $user['contrasena'])) {
-            echo json_encode(["success" => true, "message" => "Login exitoso"]);
+        if (!$user) {
+            echo json_encode(["success" => false, "error" => "Usuario no encontrado"]);
         } else {
-            // Si no coincide la contraseña o el usuario no existe
-            echo json_encode(["success" => false, "error" => "Credenciales incorrectas"]);
+            if ($data['contrasena'] === $user['contrasena'] || password_verify($data['contrasena'], $user['contrasena'])){
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Login exitoso",
+                    "id" => $user['id_usuario'],
+                    "nombre" => $user['nombre'],
+                    "patrimonio" => $user['patrimonio']
+                ]);
+            } else {
+                echo json_encode(["success" => false, "error" => "Contraseña incorrecta"]);
+            }
         }
     } catch (Exception $e) {
-        // Manejo de excepciones
         echo json_encode(["success" => false, "error" => $e->getMessage()]);
     }
 } else {
-    // Si faltan datos en la solicitud
     echo json_encode(["success" => false, "error" => "Datos incompletos"]);
 }
 ?>

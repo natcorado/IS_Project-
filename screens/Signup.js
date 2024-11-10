@@ -12,35 +12,36 @@ const Signup = ({ navigation }) => {
           Alert.alert("Error", "Passwords do not match");
           return;
       }
-   
+  
       try {
           const signupData = {
               nombre: nombre,
               correo: email,
               contrasena: password,
           };
-          console.log("Data being sent:", signupData); // Depuración de datos enviados
-   
-          const response = await fetch('http://172.20.10.3/API/addUsuario.php', {
+          console.log("Data being sent:", signupData); 
+  
+          const response = await fetch('http://192.168.1.12/API/addUsuario.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
               },
               body: JSON.stringify(signupData),
           });
-   
+  
           const responseText = await response.text();
           console.log("Raw Response Text:", responseText);
-   
+  
           if (response.headers.get('content-type')?.includes('application/json')) {
               const jsonResponse = JSON.parse(responseText);
               console.log("Parsed JSON Response:", jsonResponse);
           
-              if (response.ok) {
+              if (jsonResponse.status === 'success') {
                   Alert.alert("Success", jsonResponse.message);
               } else {
-                  Alert.alert("Error", jsonResponse.error || "Failed to sign up");
+                  Alert.alert("Error", jsonResponse.message || "Failed to sign up");
               }
+  
           } else {
               Alert.alert("Error", "Unexpected server response: " + responseText);
           }
@@ -48,7 +49,8 @@ const Signup = ({ navigation }) => {
           Alert.alert("Error", "An error occurred. Please try again later.");
           console.error("Fetch error:", error);
       }
-   };
+    };
+  
    
   
 

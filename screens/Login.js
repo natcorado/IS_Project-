@@ -5,9 +5,10 @@ const Login = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    
     const handleLogin = async () => {
       try {
-          const response = await fetch('http://172.20.10.3/API/loginUsuario.php', {
+          const response = await fetch('http://192.168.1.12/API/loginUsuario.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -18,25 +19,52 @@ const Login = ({ navigation }) => {
               }),
           });
   
-          // Imprime la respuesta cruda en texto
           const rawText = await response.text();
           console.log("Raw Response Text:", rawText);
   
-          // Intenta convertir el texto en JSON
           const jsonResponse = JSON.parse(rawText);
           console.log("Parsed JSON Response:", jsonResponse);
   
-          if (response.ok && jsonResponse.success) {
-              // Si la autenticación es exitosa, navega a la pantalla "Home"
-              navigation.navigate('Home_budget');
-          } else {
-              Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
-          }
+          if (jsonResponse.success) {
+            console.log("Parsed JSON Response:", jsonResponse);
+            navigation.navigate('Home_budget', {
+                id_usuario: jsonResponse.id,
+                nombre: jsonResponse.nombre,
+                patrimonio: jsonResponse.patrimonio,
+            });
+        } else {
+            Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
+        }
       } catch (error) {
           Alert.alert("Error", "An error occurred. Please try again.");
           console.error("Login error:", error);
       }
-  };
+    }; 
+
+  /*
+    const handleLogin = async() =>{
+        const jsonResponse = {
+            success: true, 
+            message: "Login exitoso",
+            id: 1,
+            nombre: "Kike Aragon", 
+            patrimonio: 5000
+        };
+
+        if (jsonResponse.success) {
+            console.log("Parsed JSON Response:", jsonResponse);
+            navigation.navigate('Home_budget', {
+                id_usuario: jsonResponse.id,
+                nombre: jsonResponse.nombre,
+                patrimonio: jsonResponse.patrimonio,
+            });
+        } else {
+            Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
+        }
+    };
+
+*/
+
   
     return (
         <View style={styles.container}>
