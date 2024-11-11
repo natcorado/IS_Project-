@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -9,10 +9,16 @@ import Modal from './../components/Modal';
 const Account = ({ route }) => {
     const navigation = useNavigation();
     const { id_usuario, nombre, correo, patrimonio } = route.params;
+    
+    const [initialName, setInitialName] = useState(nombre);
+    const [initialEmail, setInitialEmail] = useState(correo);
+    const [initialBudget, setInitialBudget] = useState(patrimonio);
+
     const [id_user, setId_user] = useState(id_usuario);
     const [name, setName] = useState(nombre);
     const [email, setEmail] = useState(correo);
     const [budget, setBudget] = useState(patrimonio);
+    const [budgetTemporal, setBudgetTemporal] = useState(initialBudget.toString());
 
     const [showIncomesOutcomes, setShowIncomesOutcomes] = useState(false);
     const [selectedCategoryAction, setSelectedCategoryAction] = useState(null);
@@ -36,6 +42,11 @@ const Account = ({ route }) => {
     ];
 
     const userImage = images[id_user % 8];
+    const hasChanges = () => {
+        const currentBudget = parseFloat(budgetTemporal);
+        const initialBudgetValue = parseFloat(initialBudget);
+        return name.trim() !== initialName.trim() || email.trim() !== initialEmail.trim() || currentBudget !== initialBudgetValue;
+    };
 
     const handleLogout = async () => {
         try {
@@ -48,6 +59,59 @@ const Account = ({ route }) => {
             console.log("Error during logout:", error);
         }
     };
+
+    const handleSaveChanges = async () => {
+        if (!name.trim() || !email.trim()) {
+            Alert.alert("Error", "Name and email cannot be empty.");
+            return;
+        }
+    
+        const finalBudget = budgetTemporal ? parseFloat(budgetTemporal) : budget; 
+    
+        if (isNaN(finalBudget) || finalBudget <= 0) {
+            Alert.alert("Error", "Please enter a valid, positive budget.");
+            return;
+        }
+    
+        try {
+            const response = await fetch('http://10.10.10.74/API/handleProfile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    nombre: name,
+                    email: email,
+                    budget: finalBudget,
+                }),
+            });
+    
+            const responseData = await response.json();
+    
+            if (responseData.status === 'success') {
+                Alert.alert("Success", responseData.message);
+                setBudget(finalBudget);
+                navigation.navigate('FirstPage');
+            } else {
+                Alert.alert("Error", responseData.error || "An error occurred. Please try again.");
+            }
+        } catch (error) {
+            console.log("Error saving changes:", error);
+            Alert.alert("Error", "Something went wrong. Please try again later.");
+        }
+    };
+    
+    
+
+
+    useEffect(() => {
+        setInitialName(name);
+        setInitialEmail(email);
+        setInitialBudget(budget);
+        setBudgetTemporal(budget.toString());
+    }, [modalOpen]);
+    
 
     const handlePasswordChange = () => {
         if (newPassword === confirmNewPassword) {
@@ -78,9 +142,7 @@ const Account = ({ route }) => {
     
     };
 
-
     return (
-        
         <View style={styles.container}>
             <ScrollView style={styles.container}>
             {showChangePassword && (
@@ -130,12 +192,11 @@ const Account = ({ route }) => {
                 </Modal>
             )}
             {modalOpen && (
-                <Modal isOpen={modalOpen} withInput>
+                <Modal isOpen={modalOpen}>
                     <View style={styles.modal}>
                         <View style={styles.modalContent}>
                             <Text style={styles.modalTitle}>Edit Profile</Text>
-                            
-                            {/* Edit Name */}
+
                             <Text style={styles.modalText}>Name</Text>
                             <TextInput
                                 style={styles.modalInput}
@@ -143,8 +204,7 @@ const Account = ({ route }) => {
                                 value={name}
                                 onChangeText={setName}
                             />
-                            
-                            {/* Edit Email */}
+
                             <Text style={styles.modalText}>Email</Text>
                             <TextInput
                                 style={styles.modalInput}
@@ -152,22 +212,25 @@ const Account = ({ route }) => {
                                 value={email}
                                 onChangeText={setEmail}
                             />
-                            
-                            {/* Edit Budget */}
+
                             <Text style={styles.modalText}>Budget</Text>
                             <TextInput
                                 style={styles.modalInput}
                                 placeholder="Enter your budget"
-                                value={budget.toString()}
+                                value={budgetTemporal}
                                 keyboardType="numeric"
-                                onChangeText={text => setBudget(parseFloat(text))}
+                                onChangeText={text => setBudgetTemporal(text)}
                             />
-                            
+
                             <View style={styles.buttonRow}>
-                                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                                <TouchableOpacity style={styles.closeButton} onPress={() => setModalOpen(false)}>
                                     <Text style={styles.closeButtonText}>Close</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.saveButton} onPress={handleEditProfile}>
+                                <TouchableOpacity
+                                    style={[styles.saveButton, { opacity: hasChanges() ? 1 : 0.5 }]}
+                                    onPress={handleSaveChanges}
+                                    disabled={!hasChanges()}
+                                >
                                     <Text style={styles.saveButtonText}>Save Changes</Text>
                                 </TouchableOpacity>
                             </View>
@@ -205,7 +268,6 @@ const Account = ({ route }) => {
             )}
 
             <View style={styles.settingsContainer}>
-
                 <TouchableOpacity 
                     style={styles.settingItem} 
                     onPress={() => setShowIncomesOutcomes(!showIncomesOutcomes)}
@@ -265,9 +327,9 @@ const Account = ({ route }) => {
             </ScrollView>
             <Footer navigation={navigation} id_usuario={id_user} nombre={name} correo={email} patrimonio={budget} />
         </View>
-       
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
