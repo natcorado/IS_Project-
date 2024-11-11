@@ -2,20 +2,27 @@ import React, {useState} from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
-const Footer = ({ navigation, id_usuario, nombre, patrimonio }) => {
+const Footer = ({ navigation, id_usuario, nombre, correo, patrimonio }) => {
 
   const [id_user, setId_user] = useState(id_usuario);
   const [name, setName] = useState(nombre);
+  const [email, setEmail] = useState(correo);
   const [budget, setBudget] = useState(patrimonio); 
   
+  const handleEmail= () => {
+    console.log('Email:', budget );  
+  };
+
   return (
     <View style={styles.footer}>
       <TouchableOpacity
         style={styles.footerButton}
         onPress={() => {
+          handleEmail();
           navigation.navigate('Home_budget', {
             id_usuario: id_user,
             nombre: name,
+            correo: email,
             patrimonio: budget,
           });
         }}
@@ -26,9 +33,11 @@ const Footer = ({ navigation, id_usuario, nombre, patrimonio }) => {
       <TouchableOpacity
         style={styles.footerButton}
         onPress={() => {
+          handleEmail();
           navigation.navigate('Transaction', {
             id_usuario: id_user,
             nombre: name,
+            correo: email,
             patrimonio: budget,
           });
         }}
@@ -38,14 +47,30 @@ const Footer = ({ navigation, id_usuario, nombre, patrimonio }) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.footerButton}
-        onPress={() => navigation.navigate('Home', { id_user, name, budget })}
+        onPress={() => {
+          handleEmail();
+          navigation.navigate('Home', {
+            id_usuario: id_user,
+            nombre: name,
+            correo: email,
+            patrimonio: budget,           
+          });
+        }}
       >
         <FontAwesome name="bar-chart" size={24} color="black" />
         <Text>Budget</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.footerButton}
-        onPress={() => navigation.navigate('Account', { id_user, name, budget })}
+        onPress={() => {
+          handleEmail();
+          navigation.navigate('Account', {
+            id_usuario: id_user,
+            nombre: name,
+            correo: email,
+            patrimonio: budget,
+          });
+        }}
       >
         <FontAwesome name="user" size={24} color="black" />
         <Text>Account</Text>

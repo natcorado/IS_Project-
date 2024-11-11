@@ -3,20 +3,27 @@ import { TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const AddButton = ({id_usuario, nombre, patrimonio }) => {
+const AddButton = ({id_usuario, nombre, correo, patrimonio }) => {
 
   const [id_user, setId_user] = useState(id_usuario);
   const [name, setName] = useState(nombre);
+  const [email, setEmail] = useState(correo);
   const [budget, setBudget] = useState(patrimonio); 
   const navigation = useNavigation(); 
+
+  const handleEmail= () => {
+    console.log('Email:', id_user );  
+  };
 
   return (
     <TouchableOpacity 
       style={styles.addButton}
       onPress={() => {
+        handleEmail();
         navigation.navigate('Budget', {
           id_usuario: id_user,
           nombre: name,
+          correo: email,
           patrimonio: budget,
         });
       }}

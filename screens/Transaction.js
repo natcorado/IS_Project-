@@ -9,12 +9,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Transaction = ({ route }) => {
 
-  const { id_usuario, nombre, patrimonio } = route.params;
+  const { id_usuario, nombre, correo, patrimonio } = route.params;
   const navigation = useNavigation();
   const [transactions, setTransactions] = useState([]);
 
   const [id_user, setId_user] = useState(id_usuario);
   const [name, setName] = useState(nombre);
+  const [email, setEmail] = useState(correo); 
   const [budget, setBudget] = useState(patrimonio);
   const [filterType, setFilterType] = useState('All'); 
 
@@ -167,8 +168,8 @@ const Transaction = ({ route }) => {
         }
       />
 
-      <AddButton id_usuario={id_user} nombre={name} patrimonio={budget}/>
-      <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget}/>
+      <AddButton id_usuario={id_user} nombre={name}  correo={email} patrimonio={budget}/>
+      <Footer navigation={navigation} id_usuario={id_user} nombre={name} correo={email} patrimonio={budget} />
     </View>
   );
 };

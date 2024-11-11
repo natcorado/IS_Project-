@@ -13,8 +13,13 @@ import RL_styles from "./HomeStyles/renderList_Styles.js";
 import box_styles from "./HomeStyles/box_Styles.js";
 
 
-const Home = ({ navigation }) => {
+const Home = ({ route, navigation }) => {
 
+  const { id_usuario, nombre, correo, patrimonio } = route.params;
+  const [id_user, setId_user] = useState(id_usuario);
+  const [name, setName] = useState(nombre);
+  const [email, setEmail] = useState(correo); 
+  const [budget, setBudget] = useState(patrimonio);
 // Fecha por defecto y establecimiento de la misma por setShowDatePicker
 const [currentDate, setCurrentDate] = useState(new Date()); 
 //Fecha seleccionada por el usuario
@@ -303,8 +308,8 @@ function InsertarReporte() {
         {/* Insertar reporte  PLUS */}
         {/*InsertarReporte()*/  }
         </View> 
-        <AddButton />
-        <Footer navigation={navigation} />
+        <AddButton id_usuario={id_user} nombre={name}  correo={email} patrimonio={budget}/>
+        <Footer navigation={navigation} id_usuario={id_user} nombre={name} correo={email} patrimonio={budget} />
     </View>
   );  
 };

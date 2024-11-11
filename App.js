@@ -12,6 +12,7 @@ import Transaction from './screens/Transaction';
 import Budget from './screens/Budget';
 import CRUD from './screens/CRUD'; 
 import Incomes from './screens/Incomes'; 
+import Account from './screens/Account'; 
 
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -58,6 +59,7 @@ const App = () => {
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="Transaction" component={Transaction} />
                 <Stack.Screen name="Budget" component={Budget} />
+                <Stack.Screen name="Account" component={Account} />
             </Stack.Navigator>
         </NavigationContainer>
     );

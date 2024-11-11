@@ -31,6 +31,7 @@ const Login = ({ navigation }) => {
                 id_usuario: jsonResponse.id,
                 nombre: jsonResponse.nombre,
                 patrimonio: jsonResponse.patrimonio,
+                correo: jsonResponse.correo,
             });
         } else {
             Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");

@@ -7,10 +7,11 @@ import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 
 const Home_budget = ({ route , navigation}) => {
-  const { id_usuario, nombre, patrimonio} = route.params;
+  const { id_usuario, nombre, correo, patrimonio} = route.params;
 
   const [id_user, setId_user] = useState(id_usuario);
   const [name, setName] = useState(nombre);
+  const [email, setEmail] = useState(correo); 
   const [budget, setBudget] = useState(patrimonio); 
   const [incomes, setIncomes] = useState(0); 
   const [outcomes, setOutcomes] = useState(0); 
@@ -168,7 +169,12 @@ const Home_budget = ({ route , navigation}) => {
 
   }, [outcomes, budget]); 
 
+  const handleEmail= () => {
+    console.log('Email:', email );  
+  };
+
   useEffect(() => {
+    handleEmail();
     handleGetTotalIncome();
     handleGetTotalOutcome();
     handleGetTotalIncomeLastMonth();
@@ -305,8 +311,8 @@ const Home_budget = ({ route , navigation}) => {
         </View>
       </ScrollView>
 
-      <AddButton id_usuario={id_user} nombre={name} patrimonio={budget}/>
-      <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget} />
+      <AddButton id_usuario={id_user} nombre={name} correo={email} patrimonio={budget}/>
+      <Footer navigation={navigation} id_usuario={id_user} nombre={name} correo={email} patrimonio={budget} />
 
 
     </View>

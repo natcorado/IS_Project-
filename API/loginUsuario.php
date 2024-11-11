@@ -38,17 +38,40 @@ if (isset($data['correo']) && isset($data['contrasena'])) {
         if (!$user) {
             echo json_encode(["success" => false, "error" => "Usuario no encontrado"]);
         } else {
+            // Verifica si las contraseñas coinciden
             if ($data['contrasena'] === $user['contrasena'] || password_verify($data['contrasena'], $user['contrasena'])){
                 echo json_encode([
                     "success" => true,
                     "message" => "Login exitoso",
                     "id" => $user['id_usuario'],
                     "nombre" => $user['nombre'],
+                    "correo" => $user['correo'],
                     "patrimonio" => $user['patrimonio']
                 ]);
             } else {
                 echo json_encode(["success" => false, "error" => "Contraseña incorrecta"]);
             }
+        }
+    } catch (Exception $e) {
+        echo json_encode(["success" => false, "error" => $e->getMessage()]);
+    }
+} else if (isset($data['id_usuario'])) {
+    try {
+        $pdo = getConexion();
+        
+        $sql = "SELECT correo FROM usuario WHERE id_usuario = :id_usuario";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':id_usuario', $data['id_usuario']);
+        $stmt->execute();
+        $user = $stmt->fetch();
+
+        if ($user) {
+            echo json_encode([
+                "success" => true,
+                "correo" => $user['correo'],
+            ]);
+        } else {
+            echo json_encode(["success" => false, "error" => "Usuario no encontrado"]);
         }
     } catch (Exception $e) {
         echo json_encode(["success" => false, "error" => $e->getMessage()]);

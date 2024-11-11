@@ -8,11 +8,12 @@ import { Picker } from '@react-native-picker/picker';
 import Modal from './../components/Modal';
 
 const Budget = ({ route }) => {
-  const { id_usuario, nombre, patrimonio } = route.params;
+  const { id_usuario, nombre, correo,patrimonio } = route.params;
 
   const [id_user, setId_user] = useState(id_usuario);
   const [name, setName] = useState(nombre);
   const [budget, setBudget] = useState(patrimonio); 
+  const [email, setEmail] = useState(correo);
 
   const navigation = useNavigation();
   const [modalOpen, setModalOpen] = useState(false);
@@ -303,7 +304,7 @@ const Budget = ({ route }) => {
         <View style={styles.space} />
 
       </ScrollView>
-      <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget} />
+      <Footer navigation={navigation} id_usuario={id_user} nombre={name} correo={email} patrimonio={budget} />
     </View>
   );
 };
