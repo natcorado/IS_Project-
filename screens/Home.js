@@ -348,6 +348,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   greeting: {
+    marginTop:40,
     fontSize: 16,
     color: '#333',
   },

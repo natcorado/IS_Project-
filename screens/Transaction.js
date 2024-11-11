@@ -131,10 +131,16 @@ const Transaction = ({ route }) => {
 
                 <TouchableOpacity 
                   style={styles.detailsButton}
-                  onPress={() => navigation.navigate('Incomes', { type: 'incomes' })} 
+                  onPress={() => navigation.navigate('Incomes', { 
+                    id_usuario: id_user, 
+                    nombre: name, 
+                    correo: email, 
+                    patrimonio: budget 
+                  })} 
                 >
                   <Text style={styles.detailsButtonText}>See More</Text>
                 </TouchableOpacity>
+
               </View>
 
               <View style={styles.buttonGroup}>
@@ -187,6 +193,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   greeting: {
+    marginTop:40,
     fontSize: 16,
     color: '#333',
   },
