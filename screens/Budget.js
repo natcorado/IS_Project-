@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
@@ -6,7 +6,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker'; 
 import { Picker } from '@react-native-picker/picker';
 import Modal from './../components/Modal';
-
 
 const Budget = ({ route }) => {
   const { id_usuario, nombre, patrimonio } = route.params;
@@ -17,22 +16,22 @@ const Budget = ({ route }) => {
 
   const navigation = useNavigation();
   const [modalOpen, setModalOpen] = useState(false);
-  const [isExpense, setIsExpense] = useState(true);
-
-  const [amount, setAmount] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [isExpense, setIsExpense] = useState(1);
+  const [Outcome_Income, setOutcomes_Incomes] = useState(true);
+  const [amount, setAmount] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState(''); 
   const [date, setDate] = useState(new Date());
   const [comments, setComments] = useState('');
   const [showPicker, setShowPicker] = useState(false);
 
-  const categories = ['Category 1', 'Category 2', 'Category 3'];
+  const [categories, setCategories] = useState([]);
 
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShowPicker(false);
     setDate(currentDate);
   };
-
 
   const showDatepicker = () => {
     setShowPicker(true);
@@ -46,6 +45,117 @@ const Budget = ({ route }) => {
     setModalOpen(false); 
   };
 
+  const handleAddNewCategory = async () => {
+    try {
+      const response = await fetch('http://10.10.10.74/API/getCategories.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            id_usuario: id_user,
+            Outcome_Income: Outcome_Income,
+            Read_Write: 1,
+            Category: selectedCategory
+        }),
+      });
+
+      const rawText = await response.text();
+      console.log("Raw Response Text:", rawText);
+
+      const jsonResponse = JSON.parse(rawText);
+      console.log("Parsed JSON Response:", jsonResponse);
+
+      if (jsonResponse.status === "success") {
+        Alert.alert("Exitoso:", jsonResponse.message);
+      } 
+
+    } catch (error) {
+      Alert.alert("Error", "An error occurred. Please try again.");
+      console.error("Error adding category:", error);
+    }
+  };
+
+  const handleListCategories = async () => {
+    try {
+      const response = await fetch('http://10.10.10.74/API/getCategories.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            id_usuario: id_user,
+            Outcome_Income: Outcome_Income,
+            Read_Write: 0,
+            Category: selectedCategory
+        }),
+      });
+
+      const rawText = await response.text();
+      console.log("Raw Response Text:", rawText);
+
+      const jsonResponse = JSON.parse(rawText);
+      console.log("Parsed JSON Response:", jsonResponse);
+
+      if (jsonResponse.status === "success") {
+        const fetchedCategories = jsonResponse.data.map(item => ({
+          name: item.categoria.trim(),
+          id_tipo: item.id_tipo
+        }));
+        setCategories(fetchedCategories);
+      } 
+
+    } catch (error) {
+      Alert.alert("Error", "An error occurred. Please try again.");
+      console.error("Error adding category:", error);
+    }
+  };
+
+  const handleAddNewRegister = async () => {
+    try {
+      const response = await fetch('http://10.10.10.74/API/getCategories.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            id_usuario: id_user,
+            id_tipo: selectedCategoryId,
+            Outcome_Income: Outcome_Income,
+            fecha:date,
+            cantidad: amount,
+            descripcion: comments,
+        }),
+      });
+
+      const rawText = await response.text();
+      console.log("Raw Response Text:", rawText);
+
+      const jsonResponse = JSON.parse(rawText);
+      console.log("Parsed JSON Response:", jsonResponse);
+
+      if (jsonResponse.status === "success") {
+        Alert.alert("Exitoso:", jsonResponse.message);
+      } 
+
+    } catch (error) {
+      Alert.alert("Error", "An error occurred. Please try again.");
+      console.error("Error adding category:", error);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    handleListCategories();  
+  }, [Outcome_Income]);
+
+  const handleCategoryChange = (itemValue) => {
+    const category = categories.find(cat => cat.name === itemValue);
+    setSelectedCategory(itemValue);
+    setSelectedCategoryId(category ? category.id_tipo : '');
+  };
+
   return (
     <View style={styles.container}>
       {modalOpen && (
@@ -53,18 +163,24 @@ const Budget = ({ route }) => {
               <View style={styles.modal}>
                   <View style={styles.modalContent}>
                       <Text style={styles.modalTitle}>
-                        {isExpense ? "Add Category - Expenses": "Add Category - Income"}
+                        {isExpense ? "Add Category - Expenses" : "Add Category - Income"}
                       </Text>
                       <Text style={styles.sectionLabel}>Categories</Text>
                       <TextInput
                           style={styles.modalInput}
                           placeholder="Enter category name"
+                          onChangeText={setSelectedCategory}
                       />
                       <View style={styles.buttonRow}>
                           <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
                               <Text style={styles.closeButtonText}>Close</Text>
                           </TouchableOpacity>
-                          <TouchableOpacity style={styles.addButtonModal} onPress={() => Alert.alert('Add button pressed')}>
+                          <TouchableOpacity 
+                            style={styles.addButtonModal} 
+                            onPress={() => {
+                              handleAddNewCategory();
+                              closeModal();
+                            }}>
                               <Text style={styles.addButtonModalText}>Add</Text>
                           </TouchableOpacity>
                       </View>
@@ -72,7 +188,7 @@ const Budget = ({ route }) => {
               </View>
           </Modal>
       )}
-      <ScrollView style={styles.container}>
+     <ScrollView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.greeting}>Please,</Text>
           <Text style={styles.userName}>Add New Register</Text>
@@ -80,13 +196,21 @@ const Budget = ({ route }) => {
         <View style={styles.toggleContainer}>
           <TouchableOpacity
             style={[styles.toggleButton, isExpense && styles.activeButton]}
-            onPress={() => setIsExpense(true)}
+            onPress={() => {
+              setIsExpense(true);
+              setOutcomes_Incomes(0);
+              handleListCategories();
+            }}
           >
             <Text style={styles.toggleText}>Expenses</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.toggleButton, !isExpense && styles.activeButton]}
-            onPress={() => setIsExpense(false)}
+            onPress={() => {
+              setIsExpense(false);
+              setOutcomes_Incomes(1);
+              handleListCategories();
+            }}
           >
             <Text style={styles.toggleText}>Income</Text>
           </TouchableOpacity>
@@ -107,10 +231,10 @@ const Budget = ({ route }) => {
         <Picker
           selectedValue={selectedCategory}
           style={styles.picker}
-          onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+          onValueChange={handleCategoryChange} 
         >
           {categories.map((category, index) => (
-            <Picker.Item key={index} label={category} value={category} />
+            <Picker.Item key={index} label={category.name} value={category.name} />
           ))}
         </Picker>
 
@@ -144,7 +268,12 @@ const Budget = ({ route }) => {
         />
 
         <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>Add</Text>
+          <Text 
+            style={styles.addButtonText}
+            onPress={() => handleAddNewRegister()}
+          >
+            Add
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.space} />

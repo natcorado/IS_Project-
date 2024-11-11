@@ -173,6 +173,15 @@ const Home_budget = ({ route , navigation}) => {
     handleGetTotalOutcome();
     handleGetTotalIncomeLastMonth();
     handleGetTotalOutcomeLastMonth();
+
+    const interval = setInterval(() => {
+      handleGetTotalIncome();
+      handleGetTotalOutcome();
+      handleGetTotalIncomeLastMonth();
+      handleGetTotalOutcomeLastMonth();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []); 
   
 
