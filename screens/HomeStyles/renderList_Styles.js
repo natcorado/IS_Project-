@@ -7,7 +7,7 @@ const renderList_styles = {
         margin: 2,
       },
       listContainer: {
-        height: 120, //Altura
+        height: 180, //Altura
       },
       listItem: {
         flexDirection: 'row',

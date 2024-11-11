@@ -22,7 +22,7 @@ const Transaction = ({ route }) => {
   }, [])
   const handleOutcomes = async () => {
     try {
-      const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+      const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ const Transaction = ({ route }) => {
   
   const handleIncomes = async () => {
     try {
-      const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+      const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ const Transaction = ({ route }) => {
 
   const handleBoth = async () => {
     try {
-      const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+      const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

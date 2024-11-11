@@ -31,7 +31,7 @@ const Home = ({ route , navigation}) => {
 
   const handleGetTotalIncome = async () => {
     try {
-        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ const Home = ({ route , navigation}) => {
 
   const handleGetTotalOutcome = async () => {
     try {
-        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ const Home = ({ route , navigation}) => {
 
   const handleGetTotalIncomeLastMonth = async () => {
     try {
-        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ const Home = ({ route , navigation}) => {
 
   const handleGetTotalOutcomeLastMonth = async () => {
     try {
-        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

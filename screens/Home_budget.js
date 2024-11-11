@@ -21,7 +21,9 @@ const Home_budget = ({ route, navigation }) => {
   //Lista de reportes
   const [filteredData, setFilteredData] = useState([{ key: '1', name: "Nothing ", color: "gray", y: 1 }]);
   //Tipo de Reporte
-  const [filterType, setFilterType] = useState('1'); 
+  const [filterType, setFilterType] = useState("Incomes"); 
+  //Color de boton
+  const [IncOutbuttom , setIncOutbuttom] = useState();
   //Color reporte
   const [categoryColors, setCategoryColors] = useState({});
 
@@ -139,7 +141,7 @@ function getRandomColor() {
  // Obtener datos desde la API según el tipo de filtro
  const getData = async (type) => {
   try {
-    const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+    const response = await fetch('http://10.1.10.52/API/getIncomesAndOutcomes.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id_usuario: id_usuario, Income_Outcome: type === 'Incomes' ? 1 : 0 }),
@@ -171,6 +173,7 @@ useEffect(() => {
 const handleIncomeOutcome = (type) => {
   setFilterType(type);
   
+  setIncOutbuttom();
 };
 
 // Datos del gráfico (y la lista)
@@ -301,18 +304,28 @@ function renderFilterButtons() {
       <TouchableOpacity   
       style={[
           IncOutStyles.filterButton,
-          filterType === 'Incomes' && IncOutStyles.activeButton
+          filterType === 'Incomes' && BC_styles.selected ,
+          
         ]}
       onPress={() => handleIncomeOutcome('Incomes')}>
-        <Text>Income</Text>
+        <Text
+          style={[
+            filterType === 'Incomes' && BC_styles.selectedLabel,  // Usar StateDay del estado global
+          ]}
+        >Income</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[
           IncOutStyles.filterButton,
-          filterType === 'Incomes' && IncOutStyles.activeButton
+          filterType === 'Outcomes' && BC_styles.selected
         ]}
        onPress={() => handleIncomeOutcome('Outcomes')}>
-        <Text>Outcome</Text>
+        <Text 
+      
+        style={[
+          filterType === 'Outcomes' && BC_styles.selectedLabel,  // Usar StateDay del estado global
+        ]}
+        >Outcome</Text>
       </TouchableOpacity>
     </View>
   );

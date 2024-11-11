@@ -8,7 +8,8 @@ const box_Styles = {
         borderRadius: 10,      // Bordes redondeados
         marginTop: 15,
         marginLeft:17,
-        marginRight:17,  
+        marginRight:17, 
+        height: 600 
       },
 
 }
