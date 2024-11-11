@@ -76,71 +76,89 @@ const Budget = ({ route }) => {
     }
   };
 
+  const handleDatos = () =>{
+    console.log({
+      id_usuario: id_user,
+      id_tipo: selectedCategoryId,
+      fecha: date,
+      cantidad: amount,
+      descripcion: comments,
+    });
+  }
+
   const handleListCategories = async () => {
     try {
-      const response = await fetch('http://10.10.10.74/API/getCategories.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            id_usuario: id_user,
-            Outcome_Income: Outcome_Income,
-            Read_Write: 0,
-            Category: selectedCategory
-        }),
-      });
+        const response = await fetch('http://10.10.10.74/API/getCategories.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id_usuario: id_user,
+                Outcome_Income: Outcome_Income,
+                Read_Write: 0,
+                Category: selectedCategory
+            }),
+        });
 
-      const rawText = await response.text();
-      console.log("Raw Response Text:", rawText);
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
 
-      const jsonResponse = JSON.parse(rawText);
-      console.log("Parsed JSON Response:", jsonResponse);
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
 
-      if (jsonResponse.status === "success") {
-        const fetchedCategories = jsonResponse.data.map(item => ({
-          name: item.categoria.trim(),
-          id_tipo: item.id_tipo
-        }));
-        setCategories(fetchedCategories);
-      } 
-
+        if (jsonResponse.status === "success") {
+            const fetchedCategories = jsonResponse.data.map(item => ({
+                name: item.categoria.trim(),
+                id_tipo: item.id_tipo
+            }));
+            setCategories(fetchedCategories);
+        } else {
+            Alert.alert("Error", "No se pudieron cargar las categorías.");
+        }
     } catch (error) {
-      Alert.alert("Error", "An error occurred. Please try again.");
-      console.error("Error adding category:", error);
+        Alert.alert("Error", "Ocurrió un error al cargar las categorías.");
+        console.error("Error loading categories:", error);
     }
   };
 
+
   const handleAddNewRegister = async () => {
-    try {
-      const response = await fetch('http://10.10.10.74/API/getCategories.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+    if(amount > 0 && comments.trim() !== ""){
+      try {
+        const response = await fetch('http://10.10.10.74/API/getCategories.php', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             id_usuario: id_user,
             id_tipo: selectedCategoryId,
             Outcome_Income: Outcome_Income,
-            fecha:date,
+            fecha: date.toISOString().split('T')[0], 
             cantidad: amount,
             descripcion: comments,
-        }),
-      });
-
-      const rawText = await response.text();
-      console.log("Raw Response Text:", rawText);
-
-      const jsonResponse = JSON.parse(rawText);
-      console.log("Parsed JSON Response:", jsonResponse);
-
-      if (jsonResponse.status === "success") {
-        Alert.alert("Exitoso:", jsonResponse.message);
-      } 
-
-    } catch (error) {
-      Alert.alert("Error", "An error occurred. Please try again.");
-      console.error("Error adding category:", error);
+          }),
+        });
+  
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
+  
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
+  
+        if (jsonResponse.status === "success") {
+          Alert.alert("Exitoso:", jsonResponse.message);
+        } 
+  
+      } catch (error) {
+        Alert.alert("Error", "An error occurred. Please try again.");
+        console.error("Error adding category:", error);
+      }
+    }else if (amount < 0){
+      Alert.alert("Invalid Amount", "Negative numbers are not allowed.");
+    }else if (comments.trim() == ""){
+      Alert.alert("Invalid comment", "To ensure better tracking and organization of your finances, it's important to add a comment that provides clarity on your expenses and income.");
     }
   };
 
@@ -152,9 +170,16 @@ const Budget = ({ route }) => {
 
   const handleCategoryChange = (itemValue) => {
     const category = categories.find(cat => cat.name === itemValue);
-    setSelectedCategory(itemValue);
-    setSelectedCategoryId(category ? category.id_tipo : '');
+    if (category) {
+        setSelectedCategory(itemValue);
+        setSelectedCategoryId(category.id_tipo);
+    } else {
+        console.warn("Categoría no encontrada:", itemValue);
+        setSelectedCategory(itemValue);
+        setSelectedCategoryId('');
+    }
   };
+
 
   return (
     <View style={styles.container}>
@@ -198,21 +223,21 @@ const Budget = ({ route }) => {
             style={[styles.toggleButton, isExpense && styles.activeButton]}
             onPress={() => {
               setIsExpense(true);
-              setOutcomes_Incomes(0);
-              handleListCategories();
-            }}
-          >
-            <Text style={styles.toggleText}>Expenses</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleButton, !isExpense && styles.activeButton]}
-            onPress={() => {
-              setIsExpense(false);
               setOutcomes_Incomes(1);
               handleListCategories();
             }}
           >
             <Text style={styles.toggleText}>Income</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.toggleButton, !isExpense && styles.activeButton]}
+            onPress={() => {
+              setIsExpense(false);
+              setOutcomes_Incomes(0);
+              handleListCategories();
+            }}
+          >
+            <Text style={styles.toggleText}>Expenses</Text>
           </TouchableOpacity>
         </View>
 
@@ -267,14 +292,13 @@ const Budget = ({ route }) => {
           textAlignVertical="top"
         />
 
-        <TouchableOpacity style={styles.addButton}>
-          <Text 
-            style={styles.addButtonText}
-            onPress={() => handleAddNewRegister()}
-          >
-            Add
-          </Text>
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={handleAddNewRegister}
+        >
+          <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
+
 
         <View style={styles.space} />
 

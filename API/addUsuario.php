@@ -46,7 +46,8 @@ if (isset($data['nombre']) && isset($data['correo']) && isset($data['contrasena'
                 "message" => "Este correo ya está registrado",
             ]);
         } else {
-            $sql = "INSERT INTO usuario (nombre, correo, contrasena, patrimonio) VALUES (:nombre, :correo, :contrasena, 0)";
+            $sql = "INSERT INTO usuario (nombre, correo, contrasena, patrimonio) 
+                    VALUES (:nombre, :correo, :contrasena, 0)";
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':nombre', $nombre);
             $stmt->bindParam(':correo', $correo);

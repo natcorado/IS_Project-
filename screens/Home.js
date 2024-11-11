@@ -173,15 +173,6 @@ const Home_budget = ({ route , navigation}) => {
     handleGetTotalOutcome();
     handleGetTotalIncomeLastMonth();
     handleGetTotalOutcomeLastMonth();
-
-    const interval = setInterval(() => {
-      handleGetTotalIncome();
-      handleGetTotalOutcome();
-      handleGetTotalIncomeLastMonth();
-      handleGetTotalOutcomeLastMonth();
-    }, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
   }, []); 
   
 
@@ -199,14 +190,26 @@ const Home_budget = ({ route , navigation}) => {
           <View style={styles.budgetButtonsContainer}>
             <TouchableOpacity
               style={styles.budgetButton}
-              onPress={() => navigation.navigate('Budget')}
+              onPress={() => {
+                navigation.navigate('Budget', {
+                  id_usuario: id_user,
+                  nombre: name,
+                  patrimonio: budget,
+                });
+              }}
             >
               <FontAwesome name="arrow-down" size={16} color="#fff" style={styles.icon} />
               <Text style={styles.budgetButtonText}>Add income</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.budgetButton}
-              onPress={() => navigation.navigate('Budget')}
+              onPress={() => {
+                navigation.navigate('Budget', {
+                  id_usuario: id_user,
+                  nombre: name,
+                  patrimonio: budget,
+                });
+              }}
             >
               <FontAwesome name="arrow-up" size={16} color="#fff" style={styles.icon} />
               <Text style={styles.budgetButtonText}>Add outcome</Text>

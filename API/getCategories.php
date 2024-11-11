@@ -19,35 +19,40 @@ function getConexion() {
         ]);
         return $pdo;
     } catch (PDOException $e) {
-        echo json_encode(["error" => "Error en la conexión: " . $e->getMessage()]);
+        error_log("Error en la conexión: " . $e->getMessage());
+        echo json_encode(["error" => "Error en la conexión a la base de datos"]);
         exit;
     }
 }
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-// - Outcome_income 0......Outcome
-// - Outcome_income 1......Income
-// - Read_Write 0..........Read
-// - Read_Write 0..........Write
+// Función para validar campos obligatorios
+function validateRequiredFields($fields, $data) {
+    $missingFields = [];
+    foreach ($fields as $field) {
+        if (!isset($data[$field])) {
+            $missingFields[] = $field;
+        }
+    }
+    if (!empty($missingFields)) {
+        echo json_encode(["error" => "Faltan campos obligatorios: " . implode(", ", $missingFields)]);
+        exit;
+    }
+}
 
-// 00 Read Outcome
-// 01 Read Income
-// 10 Write Outcome
-// 11 Write Income
+try {
+    if (isset($data['id_usuario'], $data['Read_Write'], $data['Outcome_Income'])) {
+        $requiredFields = ['id_usuario', 'Read_Write', 'Outcome_Income'];
+        validateRequiredFields($requiredFields, $data);
 
-if (isset($data['id_usuario']) && isset($data['Read_Write']) && isset($data['Outcome_Income'])) {
-    $Income_Outcome = $data['Outcome_Income']; 
-    $id_usuario = $data['id_usuario'];
-    $Read_Write = $data['Read_Write'];
-    $Category = isset($data['Category']) ? $data['Category'] : null;
-
-    try {
         $pdo = getConexion(); 
+        $Income_Outcome = $data['Outcome_Income']; 
+        $id_usuario = $data['id_usuario'];
+        $Read_Write = $data['Read_Write'];
+        $Category = $data['Category'] ?? null;
 
-        // Si es Read (0) -> Leer categorías de Gasto o Ingreso
         if ($Read_Write === 0) {
-
             $tipo_reporte = ($Income_Outcome === 0) ? 'Gasto' : 'Ingreso';
 
             $query = "SELECT id_tipo, categoria
@@ -66,35 +71,22 @@ if (isset($data['id_usuario']) && isset($data['Read_Write']) && isset($data['Out
                 "data" => $result
             ]);
 
-        // Si es Write (1) -> Insertar Gasto o Ingreso
         } elseif ($Read_Write === 1 && $Category) {
-
             $tipo_reporte = ($Income_Outcome === 0) ? 'Gasto' : 'Ingreso';
 
-            // Verificar si la categoría ya existe en la base de datos
-            if ($Income_Outcome === 0) {
-                // Si es 0 (Outcome) -> revisamos si la categoría ya existe en "Gastos"
-                $query = "SELECT COUNT(*) FROM admin_tipo_reporte 
-                          WHERE tipo_reporte = 'Gasto' 
-                          AND categoria = :category 
-                          AND (id_usuario = :id_usuario OR id_usuario = 0)";
-            } else {
-                // Si es 1 (Income) -> revisamos si la categoría ya existe en "Ingresos"
-                $query = "SELECT COUNT(*) FROM admin_tipo_reporte 
-                          WHERE tipo_reporte = 'Ingreso' 
-                          AND categoria = :category 
-                          AND (id_usuario = :id_usuario OR id_usuario = 0)";
-            }
+            $query = "SELECT COUNT(*) FROM admin_tipo_reporte 
+                      WHERE tipo_reporte = :tipo_reporte 
+                      AND categoria = :category 
+                      AND (id_usuario = :id_usuario OR id_usuario = 0)";
 
-            // Ejecutamos la consulta para contar las categorías existentes
             $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':tipo_reporte', $tipo_reporte);
             $stmt->bindParam(':category', $Category);
             $stmt->bindParam(':id_usuario', $id_usuario);
             $stmt->execute();
-            $count = $stmt->fetchColumn(); // Obtén el número de coincidencias
+            $count = $stmt->fetchColumn();
 
             if ($count == 0) {
-                // Si no existe, insertamos la nueva categoría
                 $query = "INSERT INTO admin_tipo_reporte (categoria, tipo_reporte, id_usuario)
                           VALUES (:category, :tipo_reporte, :id_usuario);";
 
@@ -106,24 +98,20 @@ if (isset($data['id_usuario']) && isset($data['Read_Write']) && isset($data['Out
 
                 echo json_encode([
                     "status" => "success",
-                    "message" => "Dato insertado exitosamente para $tipo_reporte"
+                    "message" => "Categoría insertada exitosamente para $tipo_reporte"
                 ]);
             } else {
                 echo json_encode([
                     "error" => "La categoría '$Category' ya existe en $tipo_reporte"
                 ]);
             }
-
         } else {
             echo json_encode(["error" => "Datos incompletos o inválidos"]);
         }
 
-    } catch (Exception $e) {
-        echo json_encode(["error" => $e->getMessage()]);
-    }
-    
-} else if (isset($data['id_usuario']) && isset($data['id_tipo']) && isset($data['Outcome_Income']) && isset($data['fecha']) && isset($data['cantidad']) && isset($data['descripcion'])){
-    try{
+    } elseif (isset($data['id_usuario'], $data['id_tipo'], $data['Outcome_Income'], $data['fecha'], $data['cantidad'], $data['descripcion'])) {
+        validateRequiredFields(['id_usuario', 'id_tipo', 'Outcome_Income', 'fecha', 'cantidad', 'descripcion'], $data);
+
         $pdo = getConexion(); 
         $id_usuario = $data['id_usuario']; 
         $id_tipo = $data['id_tipo'];
@@ -135,7 +123,7 @@ if (isset($data['id_usuario']) && isset($data['Read_Write']) && isset($data['Out
         $tipo_reporte = ($Outcome_Income === 0) ? 'Gasto' : 'Ingreso';
 
         $query = "INSERT INTO admin_reporte_asociado_tiene (descripcion, cantidad, fecha, tipo_ingreso, id_tipo, id_usuario)
-                VALUES (:descripcion, :cantidad, :fecha, 'Manual', :id_tipo, :id_usuario);";
+                  VALUES (:descripcion, :cantidad, :fecha, 'Manual', :id_tipo, :id_usuario);";
 
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':descripcion', $descripcion);
@@ -144,25 +132,20 @@ if (isset($data['id_usuario']) && isset($data['Read_Write']) && isset($data['Out
         $stmt->bindParam(':id_tipo', $id_tipo);
         $stmt->bindParam(':id_usuario', $id_usuario);
 
-
         if ($stmt->execute()) {
             echo json_encode([
                 "status" => "success",
                 "message" => "Dato insertado exitosamente para $tipo_reporte"
             ]);
-
         } else {
-            echo json_encode([
-                "status" => "error",
-                "message" => "Hubo un error al insertar el dato"
-            ]);
-
+            echo json_encode(["error" => "Error al insertar el dato"]);
         }
-    }catch (Exception $e) {
-        echo json_encode(["error" => $e->getMessage()]);
+
+    } else {
+        echo json_encode(["error" => "Datos incompletos"]);
     }
-    
-}else {
-    echo json_encode(["error" => "Datos incompletos"]);
+} catch (Exception $e) {
+    error_log("Error: " . $e->getMessage());
+    echo json_encode(["error" => "Ocurrió un error inesperado"]);
 }
 ?>
