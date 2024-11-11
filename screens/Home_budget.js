@@ -1,4 +1,4 @@
-import React, {useState, length} from "react";
+import React, {useState, length, useEffect} from "react";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import{View,Text,Image,TouchableOpacity,FlatList,} from 'react-native';
 import { VictoryPie } from 'victory-native'; 
@@ -11,9 +11,20 @@ import BC_styles from './HomeStyles/boxesCalendar.js';
 import RH_styles from "./HomeStyles/renderHeader_Styles.js";
 import RL_styles from "./HomeStyles/renderList_Styles.js";
 import box_styles from "./HomeStyles/box_Styles.js";
+import IncOutStyles from "./HomeStyles/IncOutStyles.js";
 
 
-const Home = ({ navigation }) => {
+const Home_budget = ({ route, navigation }) => {
+  const {id_usuario, nombre, patrimonio} = route.params;
+  const [pieData, setPieData] = useState([]);
+  const [id_user, setId_user] = useState(id_usuario);
+  //Lista de reportes
+  const [filteredData, setFilteredData] = useState([{ key: '1', name: "Nothing ", color: "gray", y: 1 }]);
+  //Tipo de Reporte
+  const [filterType, setFilterType] = useState('1'); 
+  //Color reporte
+  const [categoryColors, setCategoryColors] = useState({});
+
 
 // Fecha por defecto y establecimiento de la misma por setShowDatePicker
 const [currentDate, setCurrentDate] = useState(new Date()); 
@@ -22,48 +33,48 @@ const [showDatePicker, setShowDatePicker] = useState(false);
 //Definir el dia del boton por defectos
 const [StateDay, setStateDay] = useState('1D');
 
-const getDateRange = (selectedDate, period) => {
-  const start = new Date(selectedDate); 
-  const end = new Date(selectedDate);
 
+const getDateRange = (selectedDate, period) => {
+  const start = new Date(selectedDate);
+  const end = new Date(selectedDate);
   switch (period) {
     case '1D':
-      console.log(start , "  ----  ", end);
-     
-      return [start, end];  // Para 1D, solo usamos la fecha seleccionada
+      return [start, end];
     case '1W':
-      start.setDate(start.getDate() - start.getDay()); // Inicio de la semana (domingo)
-      end.setDate(start.getDate() + 6);  // Fin de la semana (sábado)
-      console.log(start , "  ----  ", end);
+      start.setDate(start.getDate() - start.getDay());
+      end.setDate(start.getDate() + 6);
       return [start, end];
     case '1M':
-      start.setDate(1);  // Primer día del mes
+      start.setDate(1);
       end.setMonth(end.getMonth() + 1);
-      end.setDate(0); // Último día del mes
-      console.log(start , "  ----  ", end);
+      end.setDate(0);
       return [start, end];
     case '1Y':
-      start.setMonth(0, 1); // Primer día del año
-      end.setMonth(11, 31); // Último día del año
-      console.log(start , "  ----  ", end);
+      start.setMonth(0, 1);
+      end.setMonth(11, 31);
       return [start, end];
     default:
       return [start, end];
   }
 };
 
+
 //Filtrar los datos con base en el rango de fechas(D,W,M,Y)
-const filterDataByDate = (pieData, startDate, endDate) => {
-  return pieData.filter(item => {
+const filterDataByDate = (data, startDate, endDate) => {
+  const start = new Date(startDate).setHours(0, 0, 0, 0);
+  const end = new Date(endDate).setHours(0, 0, 0, 0);
+  return data.filter(item => {
     const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
-    const start = new Date(startDate).setHours(0, 0, 0, 0);
-    const end = new Date(endDate).setHours(0, 0, 0, 0);
     return itemDate >= start && itemDate <= end;
   });
 };
 
-// Seteo de los datos del pieChart
-const [filteredData, setFilteredData] = useState(pieData || []);  
+useEffect(() => {
+  const [startDate, endDate] = getDateRange(currentDate, StateDay);
+  const newFilteredData = filterDataByDate(pieData, startDate, endDate);
+  setFilteredData(newFilteredData.length > 0 ? newFilteredData : [{ key: '1', name: "Nothing", color: "gray", y: 1 }]);
+}, [currentDate, pieData, StateDay]);
+
 
  // Actualizar el botón seleccionado(D,W,M,Y)
 const handlePeriodChange = (newPeriod) => {
@@ -95,7 +106,75 @@ const onDateChange = (event, selectedDate) => {
  
 };
 
+
+function getColorForCategory(category) {
+  // Si ya existe un color para esta categoría, devolverlo
+  if (categoryColors[category]) {
+    return categoryColors[category];
+  } else{
+    // Genera un nuevo color y guarda el color en el estado
+    const newColor = getRandomColor();
+
+    
+    setCategoryColors(prevColors => ({
+      ...prevColors,
+      [category]: newColor
+    }));
+    
+    return newColor;
+  }
+
+}
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+
+ // Obtener datos desde la API según el tipo de filtro
+ const getData = async (type) => {
+  try {
+    const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_usuario: id_usuario, Income_Outcome: type === 'Incomes' ? 1 : 0 }),
+    });
+    const jsonResponse = await response.json();
+    if (jsonResponse.status === "success") {
+      const formattedData = jsonResponse.data.map((item, index) => ({
+        key: index.toString(),
+        name: item.categoria,
+        date: new Date(item.fecha), // Asegúrate de que sea un objeto Date
+        color: getRandomColor(),
+        y: Math.abs(item.cantidad),
+      }));
+      setPieData(formattedData);
+    } else {
+      Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+    }
+  } catch (error) {
+    Alert.alert("Error", "An error occurred. Please try again.");
+  }
+};
+
+// Llamar a getData cada vez que filterType cambia
+useEffect(() => {
+  getData(filterType);
+}, [filterType]);
+
+// Manejar cambio de filtro entre Incomes y Outcomes
+const handleIncomeOutcome = (type) => {
+  setFilterType(type);
+  
+};
+
 // Datos del gráfico (y la lista)
+/*
 const pieData = [
   { key: '1', name: "House", color: "#FF5F5F", y: 41.35, date: new Date('2024-02-19') },
   { key: '2', name: "Credit card", color: "#50E3C2", y: 21.00, date: new Date('2024-02-20') },
@@ -105,65 +184,17 @@ const pieData = [
   { key: '6', name: "Papa", color: "#AB10E0", y: 10.65, date: new Date('2024-10-25') },
   { key: '7', name: "herson", color: "blue", y: 10.65, date: new Date('2024-10-26') }
 ];
-
-
-function renderNavBar(){
-    return(
-        <View
-          style= {{
-            flexDirection: 'row',
-            height: 80,
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            paddingHorizontal: SIZES.padding,
-            backgroundColor: COLORS.white,
-
-          }}
-        >
-            <TouchableOpacity
-                style={{ justifyContent: 'center', width: 50 }}
-                onPress={() => console.log('Go Back')}
-            >
-                <Image 
-                  source={icons.back_arrow}
-                  style={{
-                      width: 30,
-                      height: 30,
-                      tintColor: COLORS.primary
-                }}
-                />
-
-            </TouchableOpacity>
-
-            
-            <TouchableOpacity
-                style={{ justifyContent: 'center', width: 50 }}
-                onPress={() => console.log('Go Back')}
-            >
-                <Image 
-                  source={icons.more}
-                  style={{
-                      width: 30,
-                      height: 30,
-                      tintColor: COLORS.primary
-                }}
-                />
-
-            </TouchableOpacity>            
-        </View>
-    )
-}
-
+*/
 
 function renderHeader() {
     return(
         <View style = {{paddingHorizontal: SIZES.padding2, backgroundColor: COLORS.white, paddingTop: 35}}>
             <View >     
             <Text style={{ color: COLORS.darkgray, ...FONTS.h5}}>Good Evening,</Text>
-            <Text style={{ color:COLORS.black, ...FONTS.h1, fontSize: 30, fontWeight: 'bold'}}>User</Text>
+            <Text style={{ color:COLORS.black, ...FONTS.h1, fontSize: 30, fontWeight: 'bold'}}>{nombre}</Text>
               <View style={RH_styles.box}>
             <Text style={{ color: COLORS.white, ...FONTS.h5 }}>My budget:</Text>
-            <Text style={{ color: COLORS.white, ...FONTS.h1, fontWeight: 'bold'}}>$25,890.00</Text>
+            <Text style={{ color: COLORS.white, ...FONTS.h1, fontWeight: 'bold'}}>${patrimonio}</Text>
               </View>
             </View>
         </View>
@@ -174,16 +205,12 @@ function renderHeader() {
 function boxesCalendar() {
   return ( 
     <View>
-      {/* Titulo */}
-      <Text style={{ color: COLORS.black, ...FONTS.h2, fontWeight: 'bold' }}>
-        Expenses by category
-      </Text>
 
       {/* Calendario */}
       <View style={{ marginTop: 12, alignItems: 'center'}}>
         <TouchableOpacity onPress={openDatePicker} style={{ flexDirection: 'row' }}>
           <Image source={icons.calendar} style={{ width: 20, height: 20, tintColor: COLORS.lightBlue }} />
-          <Text style={{ marginLeft: 10 }}>{ }</Text>
+          <Text style={{ marginLeft: 10 }}>{currentDate.toLocaleDateString()}</Text>
         </TouchableOpacity>
       </View>
 
@@ -223,17 +250,16 @@ function boxesCalendar() {
   );
 }
 
-
-  
   // Función para renderizar el gráfico
 function renderPieChart() {
   return (
+      
     <View style={{ alignItems: 'center', marginTop: -10, marginBottom: -30, paddingVertical: 0 }}>
       <VictoryPie
         data={filteredData}
         colorScale={filteredData.map(item => item.color)} 
         innerRadius={70}
-        labelRadius={0}  r
+        labelRadius={0} 
         labelComponent={<></>}  // No renderizar etiquetas
         width={300}  // Reducir ancho
         height={300} // Reducir altura
@@ -268,16 +294,32 @@ function renderPieChart() {
   );
 }
 
-function InsertarReporte() {
-  const navigation = useNavigation();
+// Renderizar botones de filtro
+function renderFilterButtons() {
   return (
-      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Image
-            source={icons.plus}
-            style={{width: 50,height: 50,marginLeft: 'auto'}}/>
+    <View style={IncOutStyles.buttonGroup}>
+      <TouchableOpacity   
+      style={[
+          IncOutStyles.filterButton,
+          filterType === 'Incomes' && IncOutStyles.activeButton
+        ]}
+      onPress={() => handleIncomeOutcome('Incomes')}>
+        <Text>Income</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          IncOutStyles.filterButton,
+          filterType === 'Incomes' && IncOutStyles.activeButton
+        ]}
+       onPress={() => handleIncomeOutcome('Outcomes')}>
+        <Text>Outcome</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
+
+
+
    
   return (
     
@@ -289,8 +331,10 @@ function InsertarReporte() {
         {/* Header section */}
         {renderHeader()}
 
-      <View style={box_styles.box}>
+        <View style={box_styles.box}>
         <View style={{marginBottom:1}}>
+
+        {renderFilterButtons()}
           {boxesCalendar()}
         </View>
           {/* Pie chart section */}
@@ -304,9 +348,9 @@ function InsertarReporte() {
         {/*InsertarReporte()*/  }
         </View> 
         <AddButton />
-        <Footer navigation={navigation} />
+        <Footer navigation={navigation} id_usuario={id_user}/>
     </View>
   );  
 };
 
-export default Home;
+export default Home_budget;

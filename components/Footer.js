@@ -13,7 +13,7 @@ const Footer = ({ navigation, id_usuario, nombre, patrimonio }) => {
       <TouchableOpacity
         style={styles.footerButton}
         onPress={() => {
-          navigation.navigate('Home_budget', {
+          navigation.navigate('Home', {
             id_usuario: id_user,
             nombre: name,
             patrimonio: budget,
@@ -38,7 +38,10 @@ const Footer = ({ navigation, id_usuario, nombre, patrimonio }) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.footerButton}
-        onPress={() => navigation.navigate('Home', { id_user, name, budget })}
+        onPress={() => navigation.navigate('Home_budget', {  
+          id_usuario: id_user,
+          nombre: name,
+          patrimonio: budget })}
       >
         <FontAwesome name="bar-chart" size={24} color="black" />
         <Text>Budget</Text>

@@ -6,8 +6,18 @@ import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 
-const Home_budget = ({ route , navigation}) => {
+
+
+const Home = ({ route , navigation}) => {
   const { id_usuario, nombre, patrimonio} = route.params;
+
+  const navigateToHomeBudget = () => {
+    navigation.navigate('Home_budget', {
+      id_usuario,
+      nombre,
+      patrimonio,
+    });
+  }
 
   const [id_user, setId_user] = useState(id_usuario);
   const [name, setName] = useState(nombre);
@@ -21,7 +31,7 @@ const Home_budget = ({ route , navigation}) => {
 
   const handleGetTotalIncome = async () => {
     try {
-        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,7 +62,7 @@ const Home_budget = ({ route , navigation}) => {
 
   const handleGetTotalOutcome = async () => {
     try {
-        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -84,7 +94,7 @@ const Home_budget = ({ route , navigation}) => {
 
   const handleGetTotalIncomeLastMonth = async () => {
     try {
-        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +126,7 @@ const Home_budget = ({ route , navigation}) => {
 
   const handleGetTotalOutcomeLastMonth = async () => {
     try {
-        const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+        const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -177,6 +187,7 @@ const Home_budget = ({ route , navigation}) => {
     handleGetTotalIncomeLastMonth();
     handleGetTotalOutcomeLastMonth();
   }, []); 
+  
   
 
   return (
@@ -298,8 +309,6 @@ const Home_budget = ({ route , navigation}) => {
 
       <AddButton />
       <Footer navigation={navigation} id_usuario={id_user} nombre={name} patrimonio={budget} />
-
-
     </View>
   );
 };
@@ -457,4 +466,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home_budget;
+export default Home;

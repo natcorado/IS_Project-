@@ -8,7 +8,7 @@ const Login = ({ navigation }) => {
     
     const handleLogin = async () => {
       try {
-          const response = await fetch('http://192.168.1.12/API/loginUsuario.php', {
+          const response = await fetch('http://192.168.1.9/API/loginUsuario.php', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -27,14 +27,15 @@ const Login = ({ navigation }) => {
   
           if (jsonResponse.success) {
             console.log("Parsed JSON Response:", jsonResponse);
-            navigation.navigate('Home_budget', {
+            navigation.navigate('Home', {
                 id_usuario: jsonResponse.id,
                 nombre: jsonResponse.nombre,
                 patrimonio: jsonResponse.patrimonio,
             });
         } else {
             Alert.alert("Login Failed", jsonResponse.error || "Invalid email or password");
-        }
+
+        }
       } catch (error) {
           Alert.alert("Error", "An error occurred. Please try again.");
           console.error("Login error:", error);

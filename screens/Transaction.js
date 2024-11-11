@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity,Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
@@ -22,7 +22,7 @@ const Transaction = ({ route }) => {
   }, [])
   const handleOutcomes = async () => {
     try {
-      const response = await fetch('http://192.168.1.12/API/getIncomesAndOutcomes.php', {
+      const response = await fetch('http://192.168.1.9/API/getIncomesAndOutcomes.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

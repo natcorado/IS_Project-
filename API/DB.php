@@ -7,6 +7,8 @@ function getConexion() {
     $password = 'Moshopahd03kronos';        
     $port = 5432;   
 
+    
+
     try {
         // Definir la cadena DSN para PostgreSQL
         $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
