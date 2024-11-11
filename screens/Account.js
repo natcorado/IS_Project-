@@ -22,7 +22,6 @@ const Account = ({ route }) => {
 
     const [showIncomesOutcomes, setShowIncomesOutcomes] = useState(false);
     const [selectedCategoryAction, setSelectedCategoryAction] = useState(null);
-    const [showLogout, setShowLogout] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
     const [showChangePassword, setShowChangePassword] = useState(false);
@@ -101,9 +100,44 @@ const Account = ({ route }) => {
             Alert.alert("Error", "Something went wrong. Please try again later.");
         }
     };
-    
-    
 
+    const handleChangePassword = async () => {
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            Alert.alert("Error", "Please fill in all fields.");
+            return;
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            Alert.alert("Error", "New passwords do not match.");
+            return;
+        }
+
+        try {
+            const response = await fetch('http://10.10.10.74/API/handleProfile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    password: currentPassword,
+                    new_password: newPassword,
+                    confirm_new_password: confirmNewPassword,
+                }),
+            });
+
+            const responseData = await response.json();
+            if (responseData.status === 'success') {
+                Alert.alert("Success", responseData.message);
+                navigation.navigate('FirstPage');
+            } else {
+                Alert.alert("Error", responseData.error || "An error occurred. Please try again.");
+            }
+        } catch (error) {
+            console.log("Error changing password:", error);
+            Alert.alert("Error", "Something went wrong. Please try again later.");
+        }
+    };
 
     useEffect(() => {
         setInitialName(name);
@@ -112,35 +146,16 @@ const Account = ({ route }) => {
         setBudgetTemporal(budget.toString());
     }, [modalOpen]);
     
-
-    const handlePasswordChange = () => {
-        if (newPassword === confirmNewPassword) {
-            console.log("Password updated successfully");
-        } else {
-            console.log("Passwords do not match!");
-        }
-    };
-
-    const handleEditProfile = () => {
-        setModalOpen(false); 
-    };
     
     const handleAddCategory = () => {
         setModalOpen(true);
         console.log('Email:', budget );   
-    };
-    
-    const closeModal = () => {
-        setModalOpen(false); 
     };
 
     const closePasswordModal = () => {
         setShowChangePassword(false); 
     };
 
-    const handleRemoveCategory = (type) => {
-    
-    };
 
     return (
         <View style={styles.container}>
@@ -183,7 +198,7 @@ const Account = ({ route }) => {
                                 <TouchableOpacity style={styles.closeButton} onPress={closePasswordModal}>
                                     <Text style={styles.closeButtonText}>Close</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.saveButton} onPress={handleEditProfile}>
+                                <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
                                     <Text style={styles.saveButtonText}>Save Changes</Text>
                                 </TouchableOpacity>
                             </View>

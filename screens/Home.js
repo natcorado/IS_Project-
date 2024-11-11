@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useCallback} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ProgressBar } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 
@@ -13,8 +13,8 @@ const Home_budget = ({ route , navigation}) => {
   const [name, setName] = useState(nombre);
   const [email, setEmail] = useState(correo); 
   const [budget, setBudget] = useState(patrimonio); 
-  const [incomes, setIncomes] = useState(0); 
-  const [outcomes, setOutcomes] = useState(0); 
+  const [incomes, setIncomes] = useState(null); 
+  const [outcomes, setOutcomes] = useState(null);
   const [progress, setProgress] = useState(0);
   const [lastIncomes, setlastIncomes] = useState(0); 
   const [lastoutcomes, setlastOutcomes] = useState(0); 
@@ -22,6 +22,7 @@ const Home_budget = ({ route , navigation}) => {
 
   const handleGetTotalIncome = async () => {
     try {
+        console.log("Fetching total income...");
         const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
@@ -34,24 +35,27 @@ const Home_budget = ({ route , navigation}) => {
         });
 
         const rawText = await response.text();
-        console.log("Raw Response Text:", rawText);
+        console.log("Raw Response Text (Income):", rawText);
 
         const jsonResponse = JSON.parse(rawText);
-        console.log("Parsed JSON Response:", jsonResponse);
+        console.log("Parsed JSON Response (Income):", jsonResponse);
 
         if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
-          setIncomes(jsonResponse.data[0].total);
+            console.log("Income Total:", jsonResponse.data[0].total);
+            setIncomes(jsonResponse.data[0].total);
         } else {
-          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+            Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
         }
     } catch (error) {
+        console.error("Error fetching total income:", error);
         Alert.alert("Error", "An error occurred. Please try again.");
-        console.error("Login error:", error);
     }
   };
 
   const handleGetTotalOutcome = async () => {
     try {
+        console.log("Fetching total income...");
         const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
@@ -64,25 +68,27 @@ const Home_budget = ({ route , navigation}) => {
         });
 
         const rawText = await response.text();
-        console.log("Raw Response Text:", rawText);
+        console.log("Raw Response Text (Outcome):", rawText);
 
         const jsonResponse = JSON.parse(rawText);
-        console.log("Parsed JSON Response:", jsonResponse);
+        console.log("Parsed JSON Response (Outcome):", jsonResponse);
 
         if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
-          setIncomes(jsonResponse.data[0].total);
+            console.log("Income Total:", jsonResponse.data[0].total);
+            setOutcomes(jsonResponse.data[0].total);
         } else {
-          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+            Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
         }
     } catch (error) {
+        console.error("Error fetching total income:", error);
         Alert.alert("Error", "An error occurred. Please try again.");
-        console.error("Login error:", error);
-    }
-  };
+    }
+  };
 
-
-  const handleGetTotalIncomeLastMonth = async () => {
+  const handleGetTotaLastlIncome = async () => {
     try {
+        console.log("Fetching total income...");
         const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
@@ -90,30 +96,32 @@ const Home_budget = ({ route , navigation}) => {
             },
             body: JSON.stringify({
                 id_usuario: id_user,
-                Income_Outcome: 4,
+                Income_Outcome: 6,
             }),
         });
 
-
         const rawText = await response.text();
-        console.log("Raw Response Text:", rawText);
+        console.log("Raw Response Text (Last Income):", rawText);
 
         const jsonResponse = JSON.parse(rawText);
-        console.log("Parsed JSON Response:", jsonResponse);
+        console.log("Parsed JSON Response (Last Income):", jsonResponse);
 
         if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
-          setIncomes(jsonResponse.data[0].total);
+            console.log("Income Total:", jsonResponse.data[0].total);
+            setlastIncomes(jsonResponse.data[0].total);
         } else {
-          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+            Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
         }
     } catch (error) {
+        console.error("Error fetching total income:", error);
         Alert.alert("Error", "An error occurred. Please try again.");
-        console.error("Login error:", error);
     }
-    };
+  };
 
-  const handleGetTotalOutcomeLastMonth = async () => {
+  const handleGetTotaLastlOutcome = async () => {
     try {
+        console.log("Fetching total income...");
         const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
             method: 'POST',
             headers: {
@@ -125,34 +133,36 @@ const Home_budget = ({ route , navigation}) => {
             }),
         });
 
-        
-
         const rawText = await response.text();
-        console.log("Raw Response Text:", rawText);
+        console.log("Raw Response Text (Last Outcome):", rawText);
 
         const jsonResponse = JSON.parse(rawText);
-        console.log("Parsed JSON Response:", jsonResponse);
+        console.log("Parsed JSON Response (Last Outcome):", jsonResponse);
 
         if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
-          setOutcomes(jsonResponse.data[0].total);
+            console.log("Income Total:", jsonResponse.data[0].total);
+            setlastOutcomes(jsonResponse.data[0].total);
         } else {
-          Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+            Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
         }
     } catch (error) {
+        console.error("Error fetching total income:", error);
         Alert.alert("Error", "An error occurred. Please try again.");
-        console.error("Login error:", error);
     }
-  }; 
+  };
+
 
   const calculatePercentageChange = (current, previous) => {
-    if (previous === 0) {
-      return current > 0 ? 100 : 0; 
+    if (previous === 0 || previous === null) {
+      return 0; 
     }
     return ((current - previous) / previous) * 100;
   };
   
   
   useEffect(() => {
+    console.log('Route Params:', route.params);
     const totalSpent = outcomes; 
     const totalBudget = budget;
     
@@ -173,14 +183,23 @@ const Home_budget = ({ route , navigation}) => {
     console.log('Email:', email );  
   };
 
-  useEffect(() => {
-    handleEmail();
-    handleGetTotalIncome();
-    handleGetTotalOutcome();
-    handleGetTotalIncomeLastMonth();
-    handleGetTotalOutcomeLastMonth();
-  }, []); 
   
+  useFocusEffect(
+    useCallback(() => {
+        console.log("useFocusEffect triggered");
+        console.log("User Data:", { id_user, name, email, budget });
+
+        handleGetTotalIncome();
+        handleGetTotalOutcome();
+        handleGetTotaLastlIncome();
+        handleGetTotaLastlOutcome();
+
+
+        return () => {
+            console.log("Cleanup on useFocusEffect unmount");
+        };
+    }, [id_user])
+  );
 
   return (
     <View style={styles.container}>

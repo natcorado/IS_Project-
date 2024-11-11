@@ -78,8 +78,51 @@ if (isset($data['id_usuario'])) {
                 ]);
             }
 
-        } else {
-            echo json_encode(["error" => "Missing required fields (name, email, or budget)."]);
+        }else if(isset($data['password']) && isset($data['new_password']) && isset($data['confirm_new_password'])) {
+            $password = trim($data['password']);
+            $new_password = trim($data['new_password']);
+            $confirm_new_password = trim($data['confirm_new_password']);
+
+            if (empty($password) || empty($new_password) || empty($confirm_new_password)) {
+                echo json_encode(["error" => "All password fields must be filled."]);
+                exit;
+            }
+
+            if ($new_password !== $confirm_new_password) {
+                echo json_encode(["error" => "New passwords do not match."]);
+                exit;
+            }
+
+            $query = "SELECT contrasena FROM usuario WHERE id_usuario = :id_usuario";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':id_usuario', $id_usuario);
+            $stmt->execute();
+            $user = $stmt->fetch();
+
+            if ($user && password_verify($password, $user['contrasena'])) {
+                $hashed_new_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+                $updateQuery = "UPDATE usuario SET contrasena = :new_password WHERE id_usuario = :id_usuario";
+                $updateStmt = $pdo->prepare($updateQuery);
+                $updateStmt->bindParam(':new_password', $hashed_new_password);
+                $updateStmt->bindParam(':id_usuario', $id_usuario);
+                $updateStmt->execute();
+
+                if ($updateStmt->rowCount() > 0) {
+                    echo json_encode([
+                        "status" => "success",
+                        "message" => "Your password has been updated successfully. Please log in again to see the changes."
+                    ]);
+                } else {
+                    echo json_encode([
+                        "status" => "error",
+                        "message" => "No changes were made or the user does not exist."
+                    ]);
+                }
+            }
+
+        }else{
+            echo json_encode(["error" => "Missing required fields (name, email, or budget) or (password, new_password, or confirm_new_password)."]);
         }
 
     } catch (Exception $e) {
