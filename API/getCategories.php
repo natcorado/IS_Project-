@@ -27,7 +27,6 @@ function getConexion() {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Función para validar campos obligatorios
 function validateRequiredFields($fields, $data) {
     $missingFields = [];
     foreach ($fields as $field) {
@@ -53,23 +52,40 @@ try {
         $Category = $data['Category'] ?? null;
 
         if ($Read_Write === 0) {
-            $tipo_reporte = ($Income_Outcome === 0) ? 'Gasto' : 'Ingreso';
+            if ($Income_Outcome === 2) {
+                $query = "SELECT id_tipo, categoria
+                          FROM admin_tipo_reporte
+                          WHERE id_usuario = :id_usuario OR id_usuario = 0;";
+            
+                $stmt = $pdo->prepare($query);
+                $stmt->bindParam(':id_usuario', $id_usuario);
+                $stmt->execute();
+                $result = $stmt->fetchAll();
+            
+                echo json_encode([
+                    "status" => "success",
+                    "data" => $result
+                ]);
+            }else{
+                $tipo_reporte = ($Income_Outcome === 0) ? 'Gasto' : 'Ingreso';
 
-            $query = "SELECT id_tipo, categoria
-                      FROM admin_tipo_reporte
-                      WHERE tipo_reporte = :tipo_reporte 
-                      AND (id_usuario = :id_usuario OR id_usuario = 0);";
+                $query = "SELECT id_tipo, categoria
+                        FROM admin_tipo_reporte
+                        WHERE tipo_reporte = :tipo_reporte 
+                        AND (id_usuario = :id_usuario OR id_usuario = 0);";
 
-            $stmt = $pdo->prepare($query);
-            $stmt->bindParam(':tipo_reporte', $tipo_reporte);
-            $stmt->bindParam(':id_usuario', $id_usuario);
-            $stmt->execute();
-            $result = $stmt->fetchAll();
+                $stmt = $pdo->prepare($query);
+                $stmt->bindParam(':tipo_reporte', $tipo_reporte);
+                $stmt->bindParam(':id_usuario', $id_usuario);
+                $stmt->execute();
+                $result = $stmt->fetchAll();
 
-            echo json_encode([
-                "status" => "success",
-                "data" => $result
-            ]);
+                echo json_encode([
+                    "status" => "success",
+                    "data" => $result
+                ]);
+
+            }
 
         } elseif ($Read_Write === 1 && $Category) {
             $tipo_reporte = ($Income_Outcome === 0) ? 'Gasto' : 'Ingreso';

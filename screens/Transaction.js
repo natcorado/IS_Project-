@@ -62,19 +62,38 @@ const Transaction = ({ route }) => {
 
   const renderTransactionItem = ({ item }) => {
     let iconName;
-    switch (item.title) {
+    const title = item.title.trim();
+
+
+    switch (title) {
       case 'Spotify':
         iconName = 'spotify';
         break;
       case 'Netflix':
-        iconName = 'film'; 
+        iconName = 'film';
         break;
       case 'Upwork':
-        iconName = 'briefcase';
+        iconName = 'filetext1';
+        break;
+      case 'Salario':  
+        iconName = 'credit-card';
+        break;
+      case 'Gimnasio': 
+        iconName = 'credit-card';
+        break;
+      case 'Intereses':  
+        iconName = 'credit-card';
+        break;
+      case 'Internet':
+        iconName = 'wi-fi';
+        break;
+      case 'Salud':  
+        iconName = 'card';
         break;
       default:
         iconName = 'credit-card';
     }
+
 
     return (
       <View style={styles.transactionContainer}>
