@@ -2,31 +2,33 @@
 const renderList_styles = {
     box: {
         borderWidth: 1,
-        borderColor: '#BEC1D2',
-        padding: 20,
+        padding: 10,
         borderRadius: 10,
-        margin: 15,
+        margin: 2,
       },
       listContainer: {
-        height: 120, //Altura
+        height: 180, //Altura
       },
       listItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 7,
-        borderBottomWidth: 1,
+        borderBottomWidth: 4,
         borderBottomColor: '#E0E0E0',
         color:"black",
         borderRadius: 10,
         
       },
       listText: {
-        fontSize: 16,
-        color:"black",
+        paddingHorizontal: 8, 
+        borderRadius: 5,     
+        color: '#000',     
       },
       listAmount: {
-        fontSize: 16,
-        color: "black",
+        marginLeft: 'auto',   // Empuja el valor hacia la derecha
+        marginTop:5,
+        fontWeight: 'bold',   // Estilo para el valor
+        color: '#000'
       }
 
 }

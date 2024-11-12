@@ -6,10 +6,12 @@ const box_Styles = {
         
         backgroundColor: 'white', // Color de fondo
         borderRadius: 10,      // Bordes redondeados
-        margin:20,
-        height:550
+        marginTop: 15,
+        marginLeft:17,
+        marginRight:17, 
+        height: 600 
       },
 
 }
 
-export default box_Styles;
+export default box_Styles; 

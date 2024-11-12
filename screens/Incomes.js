@@ -28,6 +28,7 @@ const Incomes = ({ route }) => {
   const [showEndPicker, setShowEndPicker] = useState(false);
 
   const Maincategories = [
+    { name: 'Todos' },
     { name: 'Categoría de la transacción' },
     { name: 'Rango de fecha' },
     { name: 'Monto' },
@@ -115,6 +116,7 @@ const Incomes = ({ route }) => {
     handleListCategories();
   }, [selectedCategory, Outcome_Income]);
 
+
   const FilterCategories = [
     { name: 'Categoría de la transacción' },
     { name: 'Rango de fecha' },
@@ -182,7 +184,8 @@ const Incomes = ({ route }) => {
                         (filterType === 'Incomes' && !!transaction.isPositive) || 
                         (filterType === 'Outcomes' && !transaction.isPositive);
     
-    const categoryMatches = !selectedCategory || 
+    const categoryMatches = selectedMainCategory !== 'Categoría de la transacción' ||
+                            !selectedCategory || 
                             transaction.title.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
     
 
@@ -209,7 +212,8 @@ const Incomes = ({ route }) => {
     } else if (filter === 'Outcomes') {
       setOutcomes_Incomes(0);
     } else {
-      setOutcomes_Incomes(-1);
+      setOutcomes_Incomes(2);
+      handleListCategories();
     }
 
     setFilterType(filter === filterType ? 'All' : filter);
