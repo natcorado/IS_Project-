@@ -4,6 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Incomes = ({ route }) => {
@@ -19,6 +20,12 @@ const Incomes = ({ route }) => {
   const [budget, setBudget] = useState(patrimonio);
   const [filterType, setFilterType] = useState('All');
   const [Outcome_Income, setOutcomes_Incomes] = useState(2);
+
+  const currentYear = new Date().getFullYear();
+  const [startDate, setStartDate] = useState(new Date(currentYear, 0, 1)); 
+  const [endDate, setEndDate] = useState(new Date(currentYear, 11, 31));
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const Maincategories = [
     { name: 'Categoría de la transacción' },
@@ -171,26 +178,28 @@ const Incomes = ({ route }) => {
   };
 
   const filteredTransactions = transactions.filter(transaction => {
-    // Verificar el tipo de transacción
     const typeMatches = filterType === 'All' || 
-                        (filterType === 'Incomes' && transaction.isPositive) || 
+                        (filterType === 'Incomes' && !!transaction.isPositive) || 
                         (filterType === 'Outcomes' && !transaction.isPositive);
+    
+    const categoryMatches = !selectedCategory || 
+                            transaction.title.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
+    
+
+    const [month, day, year] = transaction.date.split('/').map(Number);
+    const transactionDate = new Date(year, month - 1, day); 
   
-    // Mostrar en consola el resultado de la condición de tipo
-    console.log(`Transaction type: ${transaction.isPositive ? 'Income' : 'Outcome'}, Filter type: ${filterType}, Type matches: ${typeMatches}`);
-  
-    // Verificar la categoría
-    const categoryMatches = !selectedCategory || transaction.title.trim() === selectedCategory;
-  
-    // Mostrar en consola el resultado de la condición de categoría
-    console.log(`Transaction category: ${transaction.title}, Selected category: ${selectedCategory}, Category matches: ${categoryMatches}`);
-  
-    // Retornar el filtro combinado
-    const result = typeMatches && categoryMatches;
-    console.log(`Transaction passes filter: ${result}`);
-  
+    const dateMatches = 
+      selectedMainCategory !== 'Rango de fecha' ||
+      ((!startDate || transactionDate >= startDate) &&
+       (!endDate || transactionDate <= endDate));
+    
+    const result = typeMatches && categoryMatches && dateMatches;
+    
     return result;
   });
+  
+  
   
   
 
@@ -246,7 +255,53 @@ const Incomes = ({ route }) => {
               </Picker>
             )}
 
+            {selectedMainCategory === 'Rango de fecha' && (
+              <View style={styles.textGroup}>
+                <Text style={styles.category}>Start date:</Text>
+                <Text style={styles.category}>Finish date:</Text>
+              </View>
+            )}
 
+            {selectedMainCategory === 'Rango de fecha' && (
+              <View style={styles.datePickerGroup}>
+
+                <View style={styles.datePicker}>
+                  <Text style={styles.dateText} onPress={() => setShowStartPicker(true)}>
+                    {startDate.toLocaleDateString()}
+                  </Text>
+                  {showStartPicker && (
+                    <DateTimePicker
+                      value={startDate}
+                      mode="date"
+                      display="default"
+                      onChange={(event, date) => {
+                        setShowStartPicker(false);
+                        if (date) setStartDate(date);
+                      }}
+                    />
+                  )}
+                </View>
+
+                {/* Selector de fecha de fin */}
+                <View style={styles.datePicker}>
+                  <Text style={styles.dateText} onPress={() => setShowEndPicker(true)}>
+                    {endDate.toLocaleDateString()}
+                  </Text>
+                  {showEndPicker && (
+                    <DateTimePicker
+                      value={endDate}
+                      mode="date"
+                      display="default"
+                      onChange={(event, date) => {
+                        setShowEndPicker(false);
+                        if (date) setEndDate(date);
+                      }}
+                    />
+                  )}
+                </View>
+              </View>
+            )}
+  
 
             <View style={styles.filterSection}>
               <View style={styles.buttonGroup}>
@@ -269,7 +324,7 @@ const Incomes = ({ route }) => {
                   >
                     <Text style={styles.buttonText}>Outcome</Text>
                   </TouchableOpacity>
-                </View>
+              </View>
             </View>
           </>
         }
@@ -330,6 +385,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  textGroup: {
+    flexDirection: 'row',
+    gap: 110,
+  },
   transactionContainer: {
     flexDirection: 'row',
     paddingVertical: 10,
@@ -389,6 +448,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#f0f0f0',
     marginBottom:20
+  },
+  datePickerGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20
+  },
+  datePicker: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  label: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 5,
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#007BFF',
+    padding: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
   
 });
