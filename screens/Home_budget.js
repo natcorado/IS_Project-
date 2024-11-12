@@ -15,9 +15,15 @@ import IncOutStyles from "./HomeStyles/IncOutStyles.js";
 
 
 const Home_budget = ({ route, navigation }) => {
-  const {id_usuario, nombre, patrimonio} = route.params;
+  const {id_usuario, nombre, correo, patrimonio} = route.params;
   const [pieData, setPieData] = useState([]);
+
+  const [transactions, setTransactions] = useState([]);
+
   const [id_user, setId_user] = useState(id_usuario);
+  const [name, setName] = useState(nombre);
+  const [email, setEmail] = useState(correo); 
+  const [budget, setBudget] = useState(patrimonio);
   //Lista de reportes
   const [filteredData, setFilteredData] = useState([{ key: '1', name: "Nothing ", color: "gray", y: 1 }]);
   //Tipo de Reporte
@@ -151,7 +157,7 @@ function getRandomColor() {
       const formattedData = jsonResponse.data.map((item, index) => ({
         key: index.toString(),
         name: item.categoria,
-        date: new Date(item.fecha), // Asegúrate de que sea un objeto Date
+        date: new Date(item.fecha), 
         color: getRandomColor(),
         y: Math.abs(item.cantidad),
       }));
@@ -360,8 +366,8 @@ function renderFilterButtons() {
         {/* Insertar reporte  PLUS */}
         {/*InsertarReporte()*/  }
         </View> 
-        <AddButton />
-        <Footer navigation={navigation} id_usuario={id_user}/>
+        <AddButton id_usuario={id_user} nombre={name}  correo={email} patrimonio={budget}/>
+        <Footer navigation={navigation} id_usuario={id_user} nombre={name} correo={email} patrimonio={budget} />
     </View>
   );  
 };

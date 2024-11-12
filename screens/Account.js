@@ -13,6 +13,7 @@ const Account = ({ route }) => {
     const [initialName, setInitialName] = useState(nombre);
     const [initialEmail, setInitialEmail] = useState(correo);
     const [initialBudget, setInitialBudget] = useState(patrimonio);
+    const [outcome_income, setOutcome_income] = useState(0);
 
     const [id_user, setId_user] = useState(id_usuario);
     const [name, setName] = useState(nombre);
@@ -24,10 +25,15 @@ const Account = ({ route }) => {
     const [selectedCategoryAction, setSelectedCategoryAction] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
 
+    const [incomeModalOpen, setIncomeModalOpen] = useState(false);
+    const [outcomeModalOpen, setOutcomeModalOpen] = useState(false);
+
     const [showChangePassword, setShowChangePassword] = useState(false);
-    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+    const [categories, setCategories] = useState([]);
 
     const images = [
         require('./../assets/avatars/Cat.png'),
@@ -36,7 +42,7 @@ const Account = ({ route }) => {
         require('./../assets/avatars/Hamster.png'),
         require('./../assets/avatars/Hedgehog.png'),
         require('./../assets/avatars/Koala.png'),
-        require('./../assets/avatars/Panda.png'),
+        require('./../assets/avatars/Panda.png'), 
         require('./../assets/avatars/Pig.png'),
     ];
 
@@ -138,6 +144,65 @@ const Account = ({ route }) => {
             Alert.alert("Error", "Something went wrong. Please try again later.");
         }
     };
+
+    const handleRemoveCategories = async () => {
+        try {
+            const response = await fetch('http://10.10.10.74/API/handleProfile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    Income_Outcome: outcome_income, 
+                }),
+            });
+    
+            const rawText = await response.text();
+            const jsonResponse = JSON.parse(rawText);
+    
+            if (jsonResponse.status === 'success') {
+                const extractedCategories = jsonResponse.data.map(item => ({
+                    id: item.id_tipo,
+                    name: item.categoria,
+                }));
+                setCategories(extractedCategories || []);
+            } else {
+                Alert.alert("Error", jsonResponse.error || "An error occurred while removing categories.");
+            }
+        } catch (error) {
+            console.log("Error removing categories:", error);
+            Alert.alert("Error", "Something went wrong. Please try again later.");
+        }
+    };
+
+    const handleRemove = async (id_cat) => {
+        try {
+            const response = await fetch('http://10.10.10.74/API/handleProfile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    id_cat: id_cat
+                }),
+            });
+    
+            const rawText = await response.text();
+            const jsonResponse = JSON.parse(rawText);
+    
+            if (jsonResponse.status === 'success') {
+                Alert.alert("Success", "Se elimino el outcome con exito");
+            } else {
+                Alert.alert("Error", jsonResponse.error || "An error occurred while removing categories.");
+            }
+        } catch (error) {
+            console.log("Error removing categories:", error);
+            Alert.alert("Error", "Something went wrong. Please try again later.");
+        }
+    };
+    
 
     useEffect(() => {
         setInitialName(name);
@@ -253,6 +318,100 @@ const Account = ({ route }) => {
                     </View>
                 </Modal>
             )}
+            {incomeModalOpen && (
+                <Modal isOpen={incomeModalOpen}>
+                    <View style={styles.modal}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Remove Incomes</Text>
+                            <ScrollView style={styles.categoryList}>
+                            {categories.length > 0 ? (
+                                    categories.map((category, index) => (
+                                        <View key={index} style={styles.categoryItemWrapper}>
+                                            <Text style={styles.categoryItem}>
+                                                {`Category ID: ${category.id}, Name: ${category.name}`}
+                                            </Text>
+                                            <TouchableOpacity
+                                                style={styles.removeButton}
+                                                onPress={() => {
+                                                    handleRemove(category.id);
+                                                    setIncomeModalOpen(false);
+                                                    setCategories([]);
+                                                    console.log('Removing category', category.id);
+                                                }}
+                                            >
+                                                <Text style={styles.removeButtonText}>Remove</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        
+                                    ))
+                                ) : (
+                                    <Text style={styles.noCategories}>
+                                        No categories available to remove.
+                                    </Text>
+                                )
+                            }
+                            </ScrollView>
+                            <View style={styles.buttonRow}>
+                                <TouchableOpacity 
+                                    style={styles.closeButton} 
+                                    onPress={() => {
+                                        setIncomeModalOpen(false);
+                                        setCategories([]);
+                                    }}
+                                >
+                                    <Text style={styles.closeButtonText}>Close</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            )}
+            {outcomeModalOpen && (
+                <Modal isOpen={outcomeModalOpen}>
+                    <View style={styles.modal}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Remove Outcomes</Text>
+                            <ScrollView style={styles.categoryList}>
+                                {categories.length > 0 ? (
+                                    categories.map((category, index) => (
+                                        <View key={index} style={styles.categoryItemWrapper}>
+                                            <Text style={styles.categoryItem}>
+                                                {`Category ID: ${category.id}, Name: ${category.name}`}
+                                            </Text>
+                                            <TouchableOpacity
+                                                style={styles.removeButton}
+                                                onPress={() => {
+                                                    handleRemove(category.id);
+                                                    setOutcomeModalOpen(false);
+                                                    setCategories([]);
+                                                    console.log('Removing category', category.id);
+                                                }}
+                                            >
+                                                <Text style={styles.removeButtonText}>Remove</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))
+                                ) : (
+                                    <Text style={styles.noCategories}>
+                                        No categories available to remove.
+                                    </Text>
+                                )}
+                            </ScrollView>
+                            <View style={styles.buttonRow}>
+                                <TouchableOpacity style={styles.closeButton} 
+                                    onPress={() => {
+                                        setOutcomeModalOpen(false);
+                                        setCategories([]);
+
+                                    }}
+                                >
+                                    <Text style={styles.closeButtonText}>Close</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            )}
 
             <View style={styles.profileContainer}>
                 <View style={styles.profileImageWrapper}>  
@@ -270,6 +429,7 @@ const Account = ({ route }) => {
                     <Text style={styles.editProfileText}>Edit profile</Text>
                 </TouchableOpacity>
             </View>
+            
 
             {budget <= 0.01 && budget >= 0 && (
                 <View style={styles.welcomeMessage}>
@@ -299,14 +459,22 @@ const Account = ({ route }) => {
 
                         <TouchableOpacity 
                             style={styles.optionButton} 
-                            onPress={() => handleRemoveCategory('incomes')}
+                            onPress={() => {
+                                setOutcome_income(0);
+                                setIncomeModalOpen(true);
+                                handleRemoveCategories();
+                            }}
                         >
                             <Text style={styles.optionText}>Remove Incomes Categories</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
                             style={styles.optionButton} 
-                            onPress={() => handleRemoveCategory('expenses')}
+                            onPress={() => {
+                                setOutcome_income(1);
+                                setOutcomeModalOpen(true);
+                                handleRemoveCategories();
+                            }}
                         >
                             <Text style={styles.optionText}>Remove Expenses Categories</Text>
                         </TouchableOpacity>
@@ -542,6 +710,43 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#007BFF',
         marginTop: 15,
+    },
+    categoryList: {
+        maxHeight: 200,
+        marginVertical: 10,
+    },
+    categoryItem: {
+        fontSize: 16,
+        padding: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    noCategories: {
+        fontSize: 16,
+        color: '#888',
+        textAlign: 'center',
+        marginVertical: 10,
+    },
+    categoryItem: {
+        fontSize: 16,
+        color: '#333',
+    },
+    removeButton: {
+        marginTop:5,
+        borderColor: '#666',
+        borderBottomWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderTopWidth:1,
+        borderBottomWidth: 1,
+        backgroundColor: 'white',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 5,
+    },
+    removeButtonText: {
+        color: 'black',
+        fontSize: 14,
     },
 });
 

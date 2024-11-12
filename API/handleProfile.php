@@ -121,6 +121,60 @@ if (isset($data['id_usuario'])) {
                 }
             }
 
+        }else if (isset($data['Income_Outcome'])) {
+            $Income_Outcome = intval($data['Income_Outcome']);
+            $query = "";
+        
+            if ($Income_Outcome === 0) {
+                $query = "SELECT tipo.id_usuario, tipo.id_tipo, tipo.tipo_reporte, tipo.categoria
+                          FROM admin_tipo_reporte AS tipo
+                          LEFT JOIN admin_reporte_asociado_tiene AS reporte ON tipo.id_tipo = reporte.id_tipo AND reporte.id_usuario = :id_usuario
+                          WHERE tipo.id_usuario = :id_usuario
+                          AND reporte.id_tipo IS NULL
+                          AND tipo.tipo_reporte = 'Gasto'
+                          ORDER BY tipo.id_tipo ASC;";
+            } elseif ($Income_Outcome === 1) {
+                $query = "SELECT tipo.id_usuario, tipo.id_tipo, tipo.tipo_reporte, tipo.categoria
+                          FROM admin_tipo_reporte AS tipo
+                          LEFT JOIN admin_reporte_asociado_tiene AS reporte ON tipo.id_tipo = reporte.id_tipo AND reporte.id_usuario = :id_usuario
+                          WHERE tipo.id_usuario = :id_usuario
+                          AND reporte.id_tipo IS NULL
+                          AND tipo.tipo_reporte = 'Ingreso'
+                          ORDER BY tipo.id_tipo ASC;";
+            }
+        
+            if ($query !== "") {
+                $stmt = $pdo->prepare($query);
+                $stmt->bindParam(':id_usuario', $id_usuario);
+                $stmt->execute();
+                $result = $stmt->fetchAll();
+        
+                echo json_encode([
+                    "status" => "success",
+                    "data" => $result
+                ]);
+            } else {
+                echo json_encode(["error" => "Invalid Income_Outcome value."]);
+            }
+
+        }else if (isset($data['id_cat'])) {
+            $id_cat = intval($data['id_cat']);
+            $query = "DELETE FROM admin_tipo_reporte
+                      WHERE id_tipo = :id_tipo;";
+        
+            if ($query !== "") {
+                $stmt = $pdo->prepare($query);
+                $stmt->bindParam(':id_tipo', $id_cat);
+
+                $stmt->execute();
+                $result = $stmt->fetchAll();
+        
+                echo json_encode([
+                    "status" => "success",
+                ]);
+            } else {
+                echo json_encode(["error" => "Invalid Income_Outcome value."]);
+            }
         }else{
             echo json_encode(["error" => "Missing required fields (name, email, or budget) or (password, new_password, or confirm_new_password)."]);
         }

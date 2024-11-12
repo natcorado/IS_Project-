@@ -285,8 +285,7 @@ const Incomes = ({ route }) => {
                     />
                   )}
                 </View>
-
-                {/* Selector de fecha de fin */}
+                
                 <View style={styles.datePicker}>
                   <Text style={styles.dateText} onPress={() => setShowEndPicker(true)}>
                     {endDate.toLocaleDateString()}
