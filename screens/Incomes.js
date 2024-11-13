@@ -28,6 +28,7 @@ const Incomes = ({ route }) => {
   const [endDate, setEndDate] = useState(new Date(currentYear, 11, 31));
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  
 
   const Maincategories = [
     { name: 'Todos' },
@@ -36,6 +37,7 @@ const Incomes = ({ route }) => {
     { name: 'Monto' },
     //{ name: 'Descripción o palabra clave' },
   ];
+
 
   useEffect(() => {
     handleBoth();
