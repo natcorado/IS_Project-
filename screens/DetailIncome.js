@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Image, TextInput} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Footer from './../components/Footer';
 import AddButton from './../components/AddButton';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -14,18 +14,40 @@ const Transaction = ({ route }) => {
     const [name, setName] = useState(nombre);
     const [email, setEmail] = useState(correo);
     const [budget, setBudget] = useState(patrimonio);
+    const [categoriesText1, setCategoriesText1] = useState('');
 
     const [showAI, setShowAI] = useState(false);
-    const [inputValue, setInputValue] = useState(''); 
     const [welcomeVisible, setWelcomeVisible] = useState(true);
+
+    const [incomes, setIncomes] = useState(null); 
+    const [outcomes, setOutcomes] = useState(null);
+    const [lastIncomes, setlastIncomes] = useState(0); 
+    const [lastoutcomes, setlastOutcomes] = useState(0); 
+
+    const [inputValue, setInputValue] = useState(''); 
+    const [salary, setSalary] = useState('');
+    const [aiResponse, setAiResponse] = useState('If we are taking too long, maybe we are busy');
+
+    useFocusEffect(
+        useCallback(() => {
+            console.log("useFocusEffect triggered");
+            console.log("User Data:", { id_user, name, email, budget });
+    
+            handleGetTotalIncome();
+            handleGetTotalOutcome();
+            handleGetTotaLastlIncome();
+            handleGetTotaLastlOutcome();
+    
+    
+            return () => {
+                console.log("Cleanup on useFocusEffect unmount");
+            };
+        }, [id_user])
+    );
 
     useEffect(() => {
         handleCategories();
     }, []);
-
-    const [income, setIncome] = useState('');
-    const [expenses, setExpenses] = useState('');
-    const [savingsGoal, setSavingsGoal] = useState('');
     
     const images = [
         require('./../assets/avatars/Cat.png'),
@@ -41,62 +63,250 @@ const Transaction = ({ route }) => {
     const userImage = images[id_user % 8];
     
     /*************************** HUGGING FACE ********************************/
-    async function query(data) {
-        const response = await fetch(
-        "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
-        {
-            headers: {
-            Authorization: "Bearer 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",
-            "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify(data),
+
+    const handleSubmit = async () => {
+        if (inputValue.trim() === '' || salary.trim() === '') {
+            Alert.alert('Error', 'Por favor llena ambos campos antes de enviar.');
+            return;
         }
-        );
-        const result = await response.json();
-        return result;
+    
+        const aiContext = `
+            I have the following financial information:
+            - Total Income: ${incomes}
+            - Total Expenses: ${outcomes}
+            - Last Income: ${lastIncomes ?? 0}
+            - Last Expense: ${lastoutcomes ?? 0}
+            - Budget: ${budget}
+            - Context: ${inputValue}
+            - Salary: ${salary}
+            - Expense Categories: ${categoriesText1}
+
+            I need you to provide 3 specific recommendations to help optimize my financial management. These recommendations should focus on how to reduce costs or better manage spending based on the provided financial data.
+            - Start your response with the word "Answers:" followed by a colon.
+
+        `;
+    
+        try {
+            const response = await query({
+                "inputs": aiContext
+            });
+    
+            if (response && response.length > 0) {
+                const aiGeneratedText = response[0].generated_text || "No recommendations found.";
+                
+                
+                setAiResponse(aiGeneratedText); 
+                console.log("AI Response:", aiGeneratedText); 
+            } else {
+                setAiResponse("No response from the AI model. We are busy, try again later");
+                console.log("AI Response:sss"); 
+            }
+        } catch (error) {
+            console.error("Error querying AI:", error);
+            setAiResponse("Error querying AI model.");
+        }
+    };
+    
+    async function query(data) {
+        try {
+            const response = await fetch("https://api-inference.huggingface.co/models/google/gemma-2-2b-it", {
+                headers: {
+                    Authorization: "Bearer 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",
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify(data),
+            });
+    
+            const result = await response.json();
+            console.log("AI Model Response:", result); 
+            
+            return result; 
+        } catch (error) {
+            console.error("Error querying AI:", error);
+            return null; 
+        }
     }
     
-    query({ inputs: "Can you please list some dog names?" }).then((response) => {
-        console.log("Response:", JSON.stringify(response));
-    });
+    
+    
+    
   
+    const handleCategories = async () => {
+        const Income_Outcome = type_in_out === 'Income' ? 8 : 7;
+        try {
+        const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+            id_usuario: id_usuario,
+            Income_Outcome: Income_Outcome,
+            }),
+        });
 
-  const handleCategories = async () => {
-    const Income_Outcome = type_in_out === 'Income' ? 8 : 7;
-    try {
-      const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id_usuario: id_usuario,
-          Income_Outcome: Income_Outcome,
-        }),
-      });
+        const rawText = await response.text();
+        console.log("Raw Response Text:", rawText);
 
-      const rawText = await response.text();
-      console.log("Raw Response Text:", rawText);
+        const jsonResponse = JSON.parse(rawText);
+        console.log("Parsed JSON Response:", jsonResponse);
 
-      const jsonResponse = JSON.parse(rawText);
-      console.log("Parsed JSON Response:", jsonResponse);
+        if (jsonResponse.status === "success") {
+            const formattedCategories = jsonResponse.data.map(item => ({
+            title: item.categoria.trim(), 
+            totalAmount: `$${Math.abs(item.total_cantidad)}`,
+            isPositive: parseFloat(item.total_cantidad) > 0,
+            }));
 
-      if (jsonResponse.status === "success") {
-        const formattedCategories = jsonResponse.data.map(item => ({
-          title: item.categoria.trim(), 
-          totalAmount: `$${Math.abs(item.total_cantidad)}`,
-          isPositive: parseFloat(item.total_cantidad) > 0,
-        }));
+            //for ai usage
+            const categoriesText = formattedCategories.map(item => {
+                return `${item.title}: ${item.totalAmount} (${item.isPositive ? "Ingreso" : "Egreso"})`;
+            }).join("\n");
 
-        setTransactions(formattedCategories);
-      } else {
-        Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
-      }
-    } catch (error) {
-      Alert.alert("Error", "An error occurred. Please try again.");
-    }
-  };
+
+            setTransactions(formattedCategories);
+            setCategoriesText1(categoriesText);
+        } else {
+            Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+        }
+        } catch (error) {
+        Alert.alert("Error", "An error occurred. Please try again.");
+        }
+    };
+
+    const handleGetTotalIncome = async () => {
+        try {
+            console.log("Fetching total income...");
+            const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    Income_Outcome: 4,
+                }),
+            });
+
+            const rawText = await response.text();
+            console.log("Raw Response Text (Income):", rawText);
+
+            const jsonResponse = JSON.parse(rawText);
+            console.log("Parsed JSON Response (Income):", jsonResponse);
+
+            if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+                console.log("Income Total:", jsonResponse.data[0].total);
+                setIncomes(jsonResponse.data[0].total);
+            } else {
+                console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+                Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            }
+        } catch (error) {
+            console.error("Error fetching total income:", error);
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
+    };
+
+    const handleGetTotalOutcome = async () => {
+        try {
+            console.log("Fetching total income...");
+            const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    Income_Outcome: 3,
+                }),
+            });
+
+            const rawText = await response.text();
+            console.log("Raw Response Text (Outcome):", rawText);
+
+            const jsonResponse = JSON.parse(rawText);
+            console.log("Parsed JSON Response (Outcome):", jsonResponse);
+
+            if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+                console.log("Income Total:", jsonResponse.data[0].total);
+                setOutcomes(jsonResponse.data[0].total);
+            } else {
+                console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+                Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            }
+        } catch (error) {
+            console.error("Error fetching total income:", error);
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
+    };
+
+    const handleGetTotaLastlIncome = async () => {
+        try {
+            console.log("Fetching total income...");
+            const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    Income_Outcome: 6,
+                }),
+            });
+
+            const rawText = await response.text();
+            console.log("Raw Response Text (Last Income):", rawText);
+
+            const jsonResponse = JSON.parse(rawText);
+            console.log("Parsed JSON Response (Last Income):", jsonResponse);
+
+            if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+                console.log("Income Total:", jsonResponse.data[0].total);
+                setlastIncomes(jsonResponse.data[0].total);
+            } else {
+                console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+                Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            }
+        } catch (error) {
+            console.error("Error fetching total income:", error);
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
+    };
+
+    const handleGetTotaLastlOutcome = async () => {
+        try {
+            console.log("Fetching total income...");
+            const response = await fetch('http://10.10.10.74/API/getIncomesAndOutcomes.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_usuario: id_user,
+                    Income_Outcome: 5,
+                }),
+            });
+
+            const rawText = await response.text();
+            console.log("Raw Response Text (Last Outcome):", rawText);
+
+            const jsonResponse = JSON.parse(rawText);
+            console.log("Parsed JSON Response (Last Outcome):", jsonResponse);
+
+            if (jsonResponse.status === "success" && jsonResponse.data.length > 0) {
+                console.log("Income Total:", jsonResponse.data[0].total);
+                setlastOutcomes(jsonResponse.data[0].total);
+            } else {
+                console.error("Income fetch failed:", jsonResponse.error || "Unknown error");
+                Alert.alert("Error", jsonResponse.error || "Failed to retrieve data");
+            }
+        } catch (error) {
+            console.error("Error fetching total income:", error);
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
+    };
+    
 
   const renderTransactionItem = ({ item }) => {
     let iconName;
@@ -201,12 +411,25 @@ const Transaction = ({ route }) => {
 
                                 <TextInput
                                     style={styles.input}
-                                    value={inputValue}
-                                    onChangeText={setInputValue}
-                                    placeholder="Enter context"
+                                    value={salary}
+                                    onChangeText={setSalary}
+                                    placeholder="Enter salary"
+                                    keyboardType = "numeric"
                                 />
+
+                                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                                    <Text style={styles.submitButtonText}>Submit</Text>
+                                </TouchableOpacity>
+
                             </View>
                         )}
+
+                        {showAI && aiResponse && (
+                            <View style={styles.aiResponseContainer}>
+                                <Text style={styles.aiResponseText}>{aiResponse}</Text>
+                            </View>
+                        )}
+
                     </View>
                     <Text style={[
                             styles.subtitle,
@@ -366,6 +589,31 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#000', 
         fontWeight: 'bold', 
+    },
+    submitButton: {
+        marginTop: 5, 
+        backgroundColor: 'black', 
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    submitButtonText: {
+        color: '#fff', 
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    aiResponseContainer: {
+        marginVertical: 10,
+        padding: 10,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    aiResponseText: {
+        fontSize: 16,
+        color: '#333',
     },
     
     

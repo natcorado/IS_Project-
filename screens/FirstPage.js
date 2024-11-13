@@ -22,8 +22,8 @@ const FirstPage = ({ navigation }) => {
         <Text style={styles.createAccountButtonText}>Create An Account</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.googleButton} onPress={() => console.log('Sign Up with Google')}>
-        <Text style={styles.googleButtonText}>Sign Up With Google</Text>
+      <TouchableOpacity style={styles.googleButton} onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.googleButtonText}>Sign In</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
