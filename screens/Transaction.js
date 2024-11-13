@@ -129,7 +129,7 @@ const Transaction = ({ route }) => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={filteredTransactions}
+        data={filteredTransactions.slice(0, 10)}
         renderItem={renderTransactionItem}
         keyExtractor={item => item.id}
         ListHeaderComponent={

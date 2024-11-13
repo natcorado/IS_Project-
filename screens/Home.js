@@ -344,7 +344,16 @@ const Home_budget = ({ route , navigation}) => {
                 </Text>
                 <TouchableOpacity 
                   style={styles.detailsButton}
-                  onPress={() => navigation.navigate('Incomes', { type: 'incomes' })} 
+                  onPress={() => {
+                    handleEmail();
+                    navigation.navigate('DetailIncome', {
+                      type: 'Income',
+                      id_usuario: id_user,
+                      nombre: name,
+                      correo: email,
+                      patrimonio: budget,
+                    });
+                  }} 
                 >
                   <Text style={styles.detailsButtonText}>Details</Text>
                 </TouchableOpacity>
@@ -383,7 +392,16 @@ const Home_budget = ({ route , navigation}) => {
                 </Text>
                 <TouchableOpacity 
                   style={styles.detailsButton}
-                  onPress={() => navigation.navigate('Incomes', { type: 'outcomes' })}
+                  onPress={() => {
+                    handleEmail();
+                    navigation.navigate('DetailIncome', {
+                      type: 'Outcome',
+                      id_usuario: id_user,
+                      nombre: name,
+                      correo: email,
+                      patrimonio: budget,
+                    });
+                  }} 
                 >
                   <Text style={styles.detailsButtonText}>Details</Text>
                 </TouchableOpacity>
