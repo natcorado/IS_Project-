@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import Footer from './../components/Footer';
@@ -20,6 +20,8 @@ const Incomes = ({ route }) => {
   const [budget, setBudget] = useState(patrimonio);
   const [filterType, setFilterType] = useState('All');
   const [Outcome_Income, setOutcomes_Incomes] = useState(2);
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
 
   const currentYear = new Date().getFullYear();
   const [startDate, setStartDate] = useState(new Date(currentYear, 0, 1)); 
@@ -32,7 +34,7 @@ const Incomes = ({ route }) => {
     { name: 'Categoría de la transacción' },
     { name: 'Rango de fecha' },
     { name: 'Monto' },
-    { name: 'Descripción o palabra clave' },
+    //{ name: 'Descripción o palabra clave' },
   ];
 
   useEffect(() => {
@@ -61,7 +63,8 @@ const Incomes = ({ route }) => {
       if (jsonResponse.status === "success") {
         const formattedTransactions = jsonResponse.data.map(item => ({
           id: item.id_reporte.toString(),
-          title: item.categoria,
+          title: item.descripcion,
+          tipo: item.categoria,
           date: new Date(item.fecha).toLocaleDateString(),
           amount: (item.tipo_reporte === 'Ingreso' ? '' : '-') + `$${Math.abs(item.cantidad)}`,
           isPositive: item.tipo_reporte === 'Ingreso'
@@ -180,27 +183,43 @@ const Incomes = ({ route }) => {
   };
 
   const filteredTransactions = transactions.filter(transaction => {
+    const amount = Math.abs(parseFloat(transaction.amount.replace('$', '')));
+  
     const typeMatches = filterType === 'All' || 
                         (filterType === 'Incomes' && !!transaction.isPositive) || 
                         (filterType === 'Outcomes' && !transaction.isPositive);
     
     const categoryMatches = selectedMainCategory !== 'Categoría de la transacción' ||
                             !selectedCategory || 
-                            transaction.title.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
+                            transaction.tipo.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
     
-
+    const amountMatches = selectedMainCategory !== 'Monto' ||
+                          ((!minAmount || amount >= parseFloat(minAmount)) &&
+                           (!maxAmount || amount <= parseFloat(maxAmount)));
+  
     const [month, day, year] = transaction.date.split('/').map(Number);
     const transactionDate = new Date(year, month - 1, day); 
   
-    const dateMatches = 
-      selectedMainCategory !== 'Rango de fecha' ||
-      ((!startDate || transactionDate >= startDate) &&
-       (!endDate || transactionDate <= endDate));
-    
-    const result = typeMatches && categoryMatches && dateMatches;
-    
+    const dateMatches = selectedMainCategory !== 'Rango de fecha' ||
+                        ((!startDate || transactionDate >= startDate) &&
+                         (!endDate || transactionDate <= endDate));
+  
+    const result = typeMatches && categoryMatches && dateMatches && amountMatches;
+  
+    console.log({
+      transaction,
+      amount, 
+      typeMatches,
+      categoryMatches,
+      amountMatches,
+      dateMatches,
+      result
+    });
+  
     return result;
   });
+  
+  
   
   
   
@@ -266,6 +285,13 @@ const Incomes = ({ route }) => {
               </View>
             )}
 
+            {selectedMainCategory === 'Monto' && (
+              <View style={styles.textGroup2}>
+                <Text style={styles.category}>Min amount:</Text>
+                <Text style={styles.category}>Max amount:</Text>
+              </View>
+            )}
+
             {selectedMainCategory === 'Rango de fecha' && (
               <View style={styles.datePickerGroup}>
 
@@ -302,6 +328,25 @@ const Incomes = ({ route }) => {
                     />
                   )}
                 </View>
+              </View>
+            )}
+
+            {selectedMainCategory === 'Monto' && (
+              <View style={styles.amountFilterContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Min Amount"
+                  keyboardType="numeric"
+                  value={minAmount}
+                  onChangeText={setMinAmount}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Max Amount"
+                  keyboardType="numeric"
+                  value={maxAmount}
+                  onChangeText={setMaxAmount}
+                />
               </View>
             )}
   
@@ -392,6 +437,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 110,
   },
+  textGroup2: {
+    flexDirection: 'row',
+    gap: 90,
+  },
   transactionContainer: {
     flexDirection: 'row',
     paddingVertical: 10,
@@ -474,7 +523,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  
+  amountFilterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    marginHorizontal: 8,
+  },
+  transactionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
 });
 
 export default Incomes;

@@ -77,15 +77,7 @@ const Budget = ({ route }) => {
     }
   };
 
-  const handleDatos = () =>{
-    console.log({
-      id_usuario: id_user,
-      id_tipo: selectedCategoryId,
-      fecha: date,
-      cantidad: amount,
-      descripcion: comments,
-    });
-  }
+
 
   const handleListCategories = async () => {
     try {

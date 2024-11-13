@@ -1,5 +1,5 @@
 import React, { useState, useEffect , useCallback} from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ProgressBar } from 'react-native-paper';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -18,6 +18,59 @@ const Home_budget = ({ route , navigation}) => {
   const [progress, setProgress] = useState(0);
   const [lastIncomes, setlastIncomes] = useState(0); 
   const [lastoutcomes, setlastOutcomes] = useState(0); 
+
+  const handleOverBudgetAlert = () => {
+    console.log("User Data:", { budget, incomes});
+    
+    Alert.alert(
+      "¡Atención!",
+      "Sobrepasaste tus ingresos, no es posible que tu presupuesto sea mayor que tus ingresos. ¡Ten cuidado!"
+    );
+  };
+
+  const calculateMarginLeft = (incomes) => {
+
+    if (incomes >= 10000) {
+      return '26%'; 
+    } else if (incomes >= 1000) {
+      return '29%'; 
+    } else if (incomes >= 100) {
+      return '32%';
+    }
+    return '33%'; 
+  };
+
+  const calculateMarginLeft1 = (incomes) => {
+
+    if (incomes >= 10000) {
+      return '25%'; 
+    } else if (incomes >= 1000) {
+      return '28%'; 
+    } else if (incomes >= 100) {
+      return '28%';
+    } else if (incomes > 10) {
+      return '35%';
+    } 
+    return '29%'; 
+  };
+
+  const images = [
+    require('./../assets/avatars/Cat.png'),
+    require('./../assets/avatars/Cow.png'),
+    require('./../assets/avatars/Frog.png'),
+    require('./../assets/avatars/Hamster.png'),
+    require('./../assets/avatars/Hedgehog.png'),
+    require('./../assets/avatars/Koala.png'),
+    require('./../assets/avatars/Panda.png'), 
+    require('./../assets/avatars/Pig.png'),
+  ];
+
+  const userImage = images[id_user % 8];
+  const hasChanges = () => {
+      const currentBudget = parseFloat(budgetTemporal);
+      const initialBudgetValue = parseFloat(initialBudget);
+      return name.trim() !== initialName.trim() || email.trim() !== initialEmail.trim() || currentBudget !== initialBudgetValue;
+  };
 
 
   const handleGetTotalIncome = async () => {
@@ -210,7 +263,14 @@ const Home_budget = ({ route , navigation}) => {
         </View>
 
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceText}>My Budget:</Text>
+          <View style={styles.budgetCard}>
+            <Text style={styles.balanceText}>My Budget:</Text>
+            {budget > parseFloat(incomes) && (
+              <TouchableOpacity style={styles.alertButton} onPress={handleOverBudgetAlert}>
+                <View style={styles.redDot} />
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={styles.balanceAmount}>${budget.toLocaleString()}</Text>
           <View style={styles.budgetButtonsContainer}>
             <TouchableOpacity
@@ -242,6 +302,15 @@ const Home_budget = ({ route , navigation}) => {
           </View>
         </View>
 
+        { (parseFloat(outcomes) > parseFloat(budget)) && (
+          <View style={styles.welcomeMessage}>
+            <Image source={userImage}style={styles.welcomeImage} />
+              <Text style={styles.welcomeText}>
+                You've exceeded your budget. Be careful with your spending!
+              </Text>        
+          </View>
+        )}
+
         <Text marginBottom={-10} style={styles.recentTransactionsText}>Income and Outcomes Overview</Text>
 
         <View style={styles.overviewContainer}>
@@ -255,7 +324,11 @@ const Home_budget = ({ route , navigation}) => {
                 <Text style={styles.cardAmount}>${incomes ? incomes.toLocaleString() : "0"}</Text>
               </View>
 
-              <View style={styles.cardTextContainer2}>
+              <View style={[
+                      styles.cardTextContainer2,
+                      { marginLeft: calculateMarginLeft(incomes) }, 
+                ]}
+              >
                 <Text
                   style={[
                     styles.cardPercentage,
@@ -290,7 +363,11 @@ const Home_budget = ({ route , navigation}) => {
                 <Text style={styles.cardTitle}>Outcomes</Text>
                 <Text style={styles.cardAmount}>${outcomes ? outcomes.toLocaleString() : "0"}</Text>
               </View>
-              <View style={styles.cardTextContainer3}>
+              <View style={[
+                      styles.cardTextContainer2,
+                      { marginLeft: calculateMarginLeft1(outcomes) }, 
+                ]}
+              >
                 <Text
                   style={[
                     styles.cardPercentage,
@@ -316,7 +393,6 @@ const Home_budget = ({ route , navigation}) => {
         </View>
 
         <Text marginBottom={-10} style={styles.recentTransactionsText}>Income and Outcomes Overview</Text>
-
         <View style={styles.budgetProgressContainer}>
           <View style={styles.budgetProgressInfo}>
             <Text style={styles.budgetProgressLabel}>Left to spend</Text>
@@ -326,7 +402,16 @@ const Home_budget = ({ route , navigation}) => {
             <Text style={styles.budgetProgressLabel}>Monthly budget</Text>
             <Text style={styles.budgetProgressAmount}>${budget.toLocaleString()}</Text>
           </View>
-          <ProgressBar progress={progress} color={'#000'} style={styles.progressBar} /> 
+          
+          <ProgressBar
+            progress={progress}
+            color={parseFloat(outcomes) > parseFloat(budget) ? '#b30000' : '#000'}
+            style={[
+              styles.progressBar,
+              backgroundColor ='#eae9ef'
+            ]}
+          />
+
         </View>
       </ScrollView>
 
@@ -490,6 +575,40 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 5,
   },
+  budgetCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  }, 
+  redDot: {
+    width: 20,
+    height: 20,
+    backgroundColor: '#ff0000',
+    borderRadius: 20,
+  },
+  welcomeMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8d7da',  
+    padding: 15,
+    borderRadius: 5,  
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f5c6cb', 
+},
+welcomeImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 15,
+},
+welcomeText: {
+    fontSize: 15,
+    color: '#721c24',  
+    fontWeight: '500',
+    textAlign: 'left',
+    flex: 1,
+},
+
 });
 
 export default Home_budget;

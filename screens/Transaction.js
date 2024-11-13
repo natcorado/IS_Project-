@@ -45,7 +45,7 @@ const Transaction = ({ route }) => {
       if (jsonResponse.status === "success") {
         const formattedTransactions = jsonResponse.data.map(item => ({
           id: item.id_reporte.toString(),
-          title: item.categoria,
+          title: item.descripcion,
           date: new Date(item.fecha).toLocaleDateString(),
           amount: (item.tipo_reporte === 'Ingreso' ? '' : '-') + `$${Math.abs(item.cantidad)}`,
           isPositive: item.tipo_reporte === 'Ingreso'
@@ -85,10 +85,10 @@ const Transaction = ({ route }) => {
         iconName = 'credit-card';
         break;
       case 'Internet':
-        iconName = 'wi-fi';
+        iconName = 'credit-card';
         break;
       case 'Salud':  
-        iconName = 'card';
+        iconName = 'credit-card';
         break;
       default:
         iconName = 'credit-card';
